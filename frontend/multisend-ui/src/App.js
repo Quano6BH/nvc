@@ -5,29 +5,64 @@ import { loadWeb3, loadContract, connectWallet, shortenAddress } from './contrac
 import { useEffect, useState } from 'react';
 import scatterAbi from './contracts/abis/scatter.json'
 import nftAbi from './contracts/abis/nft.json'
+import busdAbi from './contracts/abis/busd.json'
+// import { nftContractAddress, scatterContractAddress } from './configs/index.js';
+import configs from './configs';
 function App() {
   const [scatterContract, setScatterContract] = useState();
+  const [currentBUSD, setCurrentBUSD] = useState(null);
   const [nftContract, setNftContract] = useState();
+  const [busdContract, setBusdContract] = useState();
   const [nftsBurned, setNftsBurned] = useState(null);
-
+  const [nftHolders, setNftHolders] = useState(null);
+  const [action, setAction] = useState(null);
+  const { nftContractAddress, scatterContractAddress } = configs;
   const BASE_IMAGE_CID = "QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL";
+  const busdContractAddress = "0x4e2442A6f7AeCE64Ca33d31756B5390860BF973E";
+  // const getFirstBlockNumberOfContract = () => {
+  //   nftContract.getPastEvents('Transfer', {
+  //     filter: { previousOwner: '0x0000000000000000000000000000000000000000' },
+  //     toBlock: 'latest'
+  //   })
+  //     .then(function (events) {
+  //       console.log(events) // same results as the optional callback above
+  //       let nfts = events.map((event) => {
+  //         const { returnValues } = event;
+  //         const { tokenId, to } = returnValues;
+  //         return { wallet: to, tokenId: tokenId };
+  //       })
+  //       // setNftsBurned([...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts]);
 
+  //       setNftsBurned(nfts);
+  //     });
+  // }
   const [connectedAccount, setConnectedAccount] = useState();
+  const changeAccount = (accounts) => {
+    if (accounts && accounts.length > 0) {
+      setConnectedAccount(accounts[0]);
+      loadContract(busdAbi, busdContractAddress, {
+        onContractInit: (contract) => { }
+      }).then(contract => {
+        setBusdContract(contract);
+        contract.methods.balanceOf(accounts[0]).call().then(result => {
+          setCurrentBUSD(result);
+        })
+      });
+    } else {
+      setConnectedAccount(null);
+    }
+  }
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
-        if (accounts && accounts.length > 0) {
-          setConnectedAccount(accounts[0])
-        } else {
-          setConnectedAccount(null)
-
-        }
+        changeAccount(accounts)
       }
-    })
+    }, [])
 
   }, [connectedAccount])
+
   useEffect(() => {
-    const contractAddress = "0xA7e36cbe8C97D9FB48dBF5587fD7E78cF13e552E";
+    const contractAddress = nftContractAddress;
     loadContract(nftAbi, contractAddress, {
       onContractInit: (contract) => {
 
@@ -35,9 +70,10 @@ function App() {
 
       }
     });
-  }, [nftAbi])
+  }, [nftContractAddress])
+
   useEffect(() => {
-    const contractAddress = "0xEFDcC78F733ac025F3b9eFBa186c315bAe2Bb3eF";
+    const contractAddress = scatterContractAddress;
     loadContract(scatterAbi, contractAddress, {
       onContractInit: (contract) => {
 
@@ -45,29 +81,50 @@ function App() {
 
       }
     });
-  }, [scatterAbi])
+  }, [scatterContractAddress])
   const onConnectWallet = async (e) => {
     await connectWallet({
       onAccountConnected: (accounts) => {
-        if (accounts && accounts.length > 0) {
-          setConnectedAccount(accounts[0]);
-        } else {
-          setConnectedAccount(null);
-        }
+        changeAccount(accounts);
       },
       onNetworkChanged: (networkId) => {
 
       }
     })
   }
-  const onFetchWallets = () => {
+  const onGetNftHolders = () => {
+    nftContract.getPastEvents('Transfer', {
+      // filter: { from: '0x0000000000000000000000000000000000000000' },
+      fromBlock: 0,
+      toBlock: 'latest'
+    }).then(function (events) {
+      let nfts = events.map((event) => {
+        const { returnValues } = event;
+        const { tokenId, to } = returnValues;
+        return { wallet: to, tokenId: tokenId };
+      })
+
+      let latest = [];
+      const groupByTokenId = groupBy(nfts, 'tokenId');
+      for (let key of Object.keys(groupByTokenId)) {
+        latest.push({
+          tokenId: key,
+          wallet: groupByTokenId[key].at(-1).wallet
+        })
+      }
+      // setNftsBurned([...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts]);
+      setAction("holder");
+      setNftHolders(latest);
+    });
+  }
+  const onGetBurnedNfts = () => {
+
     nftContract.getPastEvents('Transfer', {
       filter: { from: '0x0000000000000000000000000000000000000000' },
       fromBlock: 0,
       toBlock: 'latest'
     })
       .then(function (events) {
-        console.log(events) // same results as the optional callback above
         let nfts = events.map((event) => {
           const { returnValues } = event;
           const { tokenId, to } = returnValues;
@@ -75,6 +132,7 @@ function App() {
         })
         // setNftsBurned([...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts]);
 
+        setAction("burn");
         setNftsBurned(nfts);
       });
   }
@@ -84,20 +142,65 @@ function App() {
       return rv;
     }, {});
   };
-  const onMultiSend = (e) => {
-    const groupByWallet = groupBy(nftsBurned, 'wallet');
+  const getWalletsWithAmounts = (nfts) => {
+    const groupByWallet = groupBy(nfts, 'wallet');
     const walletsWithAmount = []
-    
-    for( let key of Object.keys(groupByWallet)){
+
+    for (let key of Object.keys(groupByWallet)) {
       walletsWithAmount.push({
-        wallet : key,
-        amount : groupByWallet[key].length
+        wallet: key,
+        amount: groupByWallet[key].length
       })
     }
-    console.log(walletsWithAmount)
+    return walletsWithAmount;
   }
+  const onMultiSend = async (nfts) => {
+    const walletsWithAmount = getWalletsWithAmounts(nfts);
 
-  const shortenAddress = (address) => address.substring(0, 5) + "....." + address.substring(address.length - 4, address.length)
+    await scatterContract.methods.scatterTokenSimple(
+      busdContractAddress,
+      walletsWithAmount.map(({ wallet }) => wallet),
+      walletsWithAmount.map(({ amount }) => (amount * 100000000 * 10000000000).toString()),
+      true
+    ).send({ from: connectedAccount });
+  }
+  const onRequestApproval = async () => {
+    await busdContract.methods.approve(connectedAccount, 0).send({ from: connectedAccount });
+  }
+  const renderAction = (nfts,) => {
+    return nfts && nfts.length > 0 ? <>
+
+      <button onClick={onRequestApproval}>Request Approval</button>
+      <button onClick={(e) => onMultiSend(nfts)}>Send Monei</button>
+      <br />
+      <table>
+        <thead>
+          <tr>
+            <th>Wallet address</th>
+            <th>Token ID</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody>
+          {nfts.map(({ wallet, tokenId }) =>
+            <tr className='table-row' key={`table-body-${tokenId}`}>
+              <td>{shortenAddress(wallet)}</td>
+              <td>{tokenId}</td>
+              <td><img src={`https://ipfs.io/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} alt={tokenId} /></td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </> : <></>;
+  }
+  const renderComponentByAction = (currentAction) => {
+    if (!currentAction) return <></>;
+    if (currentAction === "burn") {
+      return renderAction(nftsBurned);
+    } else if (currentAction === "holder") {
+      return renderAction(nftHolders);
+    }
+  }
   return (
     <div className="App">
       <header className="App-header">
@@ -117,36 +220,22 @@ function App() {
       <main>
         <br />
         {connectedAccount
-          ? (<>
-            <p>Nft Contract: {shortenAddress(nftContract?._address)}</p>
-            <p>Multisend Contract: {shortenAddress(nftContract?._address)}</p>
-            <p>Connected wallet: {shortenAddress(connectedAccount)}</p>
-            {nftsBurned && nftsBurned.length > 0 ? <>
+          ? (
+            <>
+              <p>Nft Contract: {shortenAddress(nftContract?._address)}</p>
+              <p>Multisend Contract: {shortenAddress(nftContract?._address)}</p>
+              <p>Connected wallet: {shortenAddress(connectedAccount)}</p>
+              <p>BUSD Balance: {currentBUSD}</p>
 
-              <button onClick={onMultiSend}>Send Monei</button>
-              <br />
-              <table>
-                <thead>
-                  <tr>
-                    <th>Wallet address</th>
-                    <th>Token ID</th>
-                    <th>Image</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {nftsBurned.map(({ wallet, tokenId }) =>
-                    <tr className='table-row' key ={`table-body-${tokenId}`}>
-                      <td>{shortenAddress(wallet)}</td>
-                      <td>{tokenId}</td>
-                      <td><img src={`https://ipfs.io/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} /></td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </> : <>
-              <button onClick={onFetchWallets}>Fetch wallets</button>
-            </>}
-          </>
+              {
+                action
+                  ? renderComponentByAction(action)
+                  : <>
+                    <button onClick={onGetNftHolders}>Get Nft Holders</button>
+                    <button onClick={onGetBurnedNfts}>Get Burned Nfts</button>
+                  </>
+              }
+            </>
           )
           : <button onClick={onConnectWallet}>Connect wallet</button>}
 
