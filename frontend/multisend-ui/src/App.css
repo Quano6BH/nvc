@@ -36,14 +36,59 @@ main {
   min-height: 70vh;
   display: flex;
   align-content: center;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
   flex-wrap: nowrap;
+  overflow-y: scroll;
+  /* display: block; */
+  /* width: 100%; */
+  max-height: 30vh;
 }
 main p {
   color: white;
   font-size: x-small;
+}
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+main table {
+  color: white;
+  font-size: x-small;
+  border: 1px solid white;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+main thead {
+  border: 1px solid white;
+}
+
+main tbody {
+  overflow-y: scroll;
+  /* display: block; */
+  /* width: 100%; */
+  max-height: 30vh;
+}
+.table-row > td:last-child > img{
+  height: 10vh;
+}
+main th {
+  border: 1px solid white;
 }
 footer {
   min-height: 10vh;
