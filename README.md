@@ -1,10 +1,14 @@
-# NVC
+NVC
+==============
 
+## folder
 contracts/ - solidity contracts
+
 web/ - frontend
+
 scripts/ - hardhat scripts
 
-
+## commands
 ```shell
 npx hardhat accounts
 npx hardhat compile
