@@ -19,9 +19,10 @@ interface ERC20 {
 contract NVCNFT is ERC721A, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
-    uint256 public constant PRICE = 0.01 ether;
+    uint256 public constant PRICE = 1 ether; //1 BUSD
     uint256 public constant COLLECTION_SIZE = 10000;
     address public constant BUSD_CONTRACT = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
+    address internal constant ADDRESS_RECEIVER = 0xE515BA407b97B053F89c4eecb8886F4C6101d4A3;
     
     constructor() ERC721A("Next Venture Capital", "NVC") {}
 
@@ -41,7 +42,7 @@ contract NVCNFT is ERC721A, Ownable {
     }
     
     function transferToken(address _owner, address _token, uint _amount) internal returns (bool){
-        return ERC20(_token).transferFrom(_owner, address(this), _amount);
+        return ERC20(_token).transferFrom(_owner, ADDRESS_RECEIVER, _amount);
     }
     
     function burn(uint256 _tokenId) public {
