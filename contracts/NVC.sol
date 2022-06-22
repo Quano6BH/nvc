@@ -47,13 +47,17 @@ contract NVCNFT is ERC721A, Ownable {
     function burn(uint256 _tokenId) public {
         require(ownerOf(_tokenId)==msg.sender,"Not the owner.");
         _burn(_tokenId, true);
+        emit NftBurned(msg.sender, _tokenId, block.timestamp);
     }
-    
+
+    event NftBurned(address owner, uint256 tokenId, uint256 timestamp);
+
     function burnBatch(uint256[] memory _tokenIds) public {
         uint256 i = 0;
         for (i; i < _tokenIds.length;i++) {
             require(ownerOf(_tokenIds[i])==msg.sender,"Not the owner.");
             _burn(_tokenIds[i], true);
+            emit NftBurned(msg.sender, _tokenIds[i], block.timestamp);
         }
     }
 }
