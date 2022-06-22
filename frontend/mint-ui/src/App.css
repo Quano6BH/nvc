@@ -64,6 +64,7 @@ main .nfts img {
   align-content: center;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 footer {
   min-height: 10vh;
@@ -73,4 +74,12 @@ footer {
 
 button {
   cursor: pointer;
+}
+input[type="number"]{
+  width: 60px;
+}
+input[type="checkbox"]{
+  position: absolute;
+  right: 0;
+  top: 0; 
 }

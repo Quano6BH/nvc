@@ -1,14 +1,30 @@
 import logo from './assets/images/logo-bg.png';
 import './App.css';
 
-import { loadWeb3, loadContract, connectWallet, shortenAddress } from './contracts';
+import { loadWeb3, loadContract, connectWallet, shortenAddress, requestApprovalForTokenAsync } from './contracts';
 import { useEffect, useState } from 'react';
 import nftAbi from './contracts/abis/nft.json'
+import busdAbi from './contracts/abis/busd.json'
+import configs from './configs';
 function App() {
   const [nftContract, setNftContract] = useState();
+  const [currentBusd, setCurrentBUSD] = useState(null);
   const [ownedNfts, setOwnedNfts] = useState([]);
+  const [busdContract, setBusdContract] = useState();
   const BASE_IMAGE_CID = "QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL";
   const [connectedAccount, setConnectedAccount] = useState();
+  const [mintAmount, setMintAmount] = useState(1);
+  const [burningTokenIds, setBurningTokenIds] = useState(new Set());
+
+  const { nftContractAddress, busdContractAddress } = configs;
+  const changeAccount = (accounts) => {
+    if (accounts && accounts.length > 0) {
+      setConnectedAccount(accounts[0]);
+      fetchOwnNfts(accounts[0])
+    } else {
+      setConnectedAccount(null);
+    }
+  }
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
@@ -16,9 +32,19 @@ function App() {
       }
     })
 
-  }, [connectedAccount])
+  })
   useEffect(() => {
-    const contractAddress = "0xa7e36cbe8c97d9fb48dbf5587fd7e78cf13e552e";
+    const contractAddress = busdContractAddress;
+    loadContract(busdAbi, contractAddress, {
+      onContractInit: (contract) => {
+
+        setBusdContract(contract)
+
+      }
+    });
+  }, [busdContractAddress])
+  useEffect(() => {
+    const contractAddress = nftContractAddress;
     loadContract(nftAbi, contractAddress, {
       onContractInit: (contract) => {
 
@@ -26,15 +52,14 @@ function App() {
 
       }
     });
-  }, [nftAbi])
-  const changeAccount = (accounts)=>{
-    if (accounts && accounts.length > 0) {
-      setConnectedAccount(accounts[0]);
-      fetchOwnNfts(accounts[0]);
-    } else {
-      setConnectedAccount(null);
-    }
-  }
+  }, [nftContractAddress])
+  useEffect(() => {
+    if (busdContract == null || connectedAccount == null)
+      return;
+    busdContract.methods.balanceOf(connectedAccount).call().then(result => {
+      setCurrentBUSD(result);
+    })
+  }, [busdContract, connectedAccount])
   const onConnectWallet = async (e) => {
     await connectWallet({
       onAccountConnected: (accounts) => {
@@ -78,10 +103,17 @@ function App() {
         setOwnedNfts(nfts);
       });
   }
+
+  const onRequestApproval = async () => {
+
+    await requestApprovalForTokenAsync(busdContract, connectedAccount, 0);
+  }
+
   const onMint = async (e) => {
+
     nftContract.methods
-      .mintToMultiple(connectedAccount, 1)
-      .send({ from: connectedAccount })
+      .mintToMultiple(connectedAccount, mintAmount)
+      .send({ from: connectedAccount, to: nftContractAddress })
       .then(result => {
         // NotificationManager.success(`Mint successfully.`);
         console.log(result)
@@ -92,8 +124,27 @@ function App() {
 
       });
   }
+  const onCheckboxChange = ({target}, tokenId) => {
+    const {checked} = target;
+    
+    if(checked){
+      if(burningTokenIds.has(tokenId))
+        return;
+      burningTokenIds.add(tokenId)
+    }else{
+      if(!burningTokenIds.has(tokenId))
+        return;
+      burningTokenIds.delete(tokenId)
+    }
+    
+    
+    setBurningTokenIds(burningTokenIds);
+  }
   const onBurn = (tokenId) => {
 
+  }
+  const onBurnMultiple = () => {
+    console.log(burningTokenIds)
   }
   return (
     <div className="App">
@@ -112,20 +163,31 @@ function App() {
         </p>
       </header>
       <main>
-        <br/>
+        <br />
         {connectedAccount
           ? (<>
             <p>Contract: {shortenAddress(nftContract?._address)}</p>
             <p>Connected wallet: {shortenAddress(connectedAccount)}</p>
-
-            <button onClick={onMint}>Mint</button>
+            <p>Current Balance: {currentBusd}</p>
+            <br />
+            <button onClick={onRequestApproval}>Request Approval</button>
+            <br />
+            <div>
+              <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
+              <button onClick={onMint}>Mint</button>
+            </div>
+            <div>
+              <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
+              <button onClick={onBurnMultiple}>Burn many</button>
+            </div>
+            <br />
             {ownedNfts ? <>
               <div className='nfts'>
                 {ownedNfts.map(({ tokenId }) =>
                   <div className='nft-item' key={`own-token-${tokenId}`}>
-
-                    <img src={`https://ipfs.io/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} />
-                    <button onClick={() => onBurn(tokenId)}>Burn</button>
+                    <input type={"checkbox"} onChange={(e) => onCheckboxChange(e,tokenId)} />
+                    <img src={`https://ipfs.io/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} alt={tokenId} />
+                    <button onClick={(e) => onBurn(tokenId)}>Burn</button>
                   </div>)
                 }
               </div>

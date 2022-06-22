@@ -1,34 +1,8 @@
 import Web3 from 'web3';
-// import {
-//     setGlobalState,
-//     getGlobalState,
-// } from '../store'
 
-// import ContractAbi from './abis/GreatGoatblinContractAbi.json'
-// import { NotificationManager } from 'react-notifications';
-
-// const contractAddress = "0x6cbd5EB1768Cf6dcC1f94eC20158F068388b4927";
-// const mintToMultiple = async (amount) => {
-//     console.log(amount)
-//     const contract = await getGlobalState('contract')
-
-//     NotificationManager.info(`Minting in progress.`);
-//     const connectedAccount = getGlobalState('connectedAccount');
-
-
-//     contract.methods
-//         .mintToMultiple(connectedAccount, amount)
-//         .send({ from: connectedAccount })
-//         .then(result => {
-//             NotificationManager.success(`Mint successfully.`);
-//         })
-//         .catch(error => {
-//             NotificationManager.error(`Mint failed.`);
-//             console.error(error)
-
-//         });
-
-// }
+const requestApprovalForTokenAsync = async (contract, forAccount, amount) => {
+    await contract.methods.approve(forAccount, amount).send({ from: forAccount });
+}
 
 const isMetaMaskInstalled = () => {
     const { ethereum } = window;
@@ -97,4 +71,4 @@ const connectWallet = async ({ onAccountConnected, onNetworkChanged }) => {
 
 
 const shortenAddress = (address) => address.substring(0, 5) + "....." + address.substring(address.length - 4, address.length)
-export { connectWallet, loadWeb3, loadContract, shortenAddress }
+export { connectWallet, loadWeb3, loadContract, shortenAddress, requestApprovalForTokenAsync }

@@ -10,15 +10,15 @@ import busdAbi from './contracts/abis/busd.json'
 import configs from './configs';
 function App() {
   const [scatterContract, setScatterContract] = useState();
-  const [currentBUSD, setCurrentBUSD] = useState(null);
   const [nftContract, setNftContract] = useState();
   const [busdContract, setBusdContract] = useState();
+  const [currentBUSD, setCurrentBUSD] = useState(null);
   const [nftsBurned, setNftsBurned] = useState(null);
   const [nftHolders, setNftHolders] = useState(null);
   const [action, setAction] = useState(null);
-  const { nftContractAddress, scatterContractAddress } = configs;
+  const { nftContractAddress, scatterContractAddress , busdContractAddress } = configs;
   const BASE_IMAGE_CID = "QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL";
-  const busdContractAddress = "0x4e2442A6f7AeCE64Ca33d31756B5390860BF973E";
+  //const busdContractAddress = configs.busdContractAddress;//"0x4e2442A6f7AeCE64Ca33d31756B5390860BF973E";
   // const getFirstBlockNumberOfContract = () => {
   //   nftContract.getPastEvents('Transfer', {
   //     filter: { previousOwner: '0x0000000000000000000000000000000000000000' },
@@ -37,6 +37,7 @@ function App() {
   //     });
   // }
   const [connectedAccount, setConnectedAccount] = useState();
+  
   const changeAccount = (accounts) => {
     if (accounts && accounts.length > 0) {
       setConnectedAccount(accounts[0]);
