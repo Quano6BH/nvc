@@ -21,67 +21,38 @@ contract NVCNFT is ERC721A, Ownable {
     Counters.Counter private _tokenIdCounter;
     uint256 public constant PRICE = 0.01 ether;
     uint256 public constant COLLECTION_SIZE = 10000;
-
+    address public constant BUSD_CONTRACT = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
+    
     constructor() ERC721A("Next Venture Capital", "NVC") {}
 
     function _baseURI() internal pure override returns (string memory) {
         return "ipfs://QmbksLtdi1yDJdHcPgVBc5cLyGGs5j4rMq4a4WXFFZu2XG/";
     }
 
-/////////////// GENERIC MINT FUNCTIONS
-    /*
-    * @dev Mints a single token to an address.
-    * fee may or may not be required*
-    * @param _to address of the future owner of the token
-    */
     function safeMint(uint _quantity) public payable {
-        
+        require(_quantity > 0, "Quantity must be greater than 0.");
         uint256 currentTokenId = _tokenIdCounter.current();
         require(currentTokenId + _quantity <= COLLECTION_SIZE, "Cannot mint over supply cap");
-
         //require(mintingOpen == true, "Minting is not open right now!");
-
         //require(canMintAmount(_to, 1), "Wallet address is over the maximum allowed mints");
-
-        require(msg.value >= PRICE, "Value below required mint fee");
-        
-        
+        require(transferToken(msg.sender, BUSD_CONTRACT, PRICE * _quantity), "Contract hasn't received the mint fee.");      
         _tokenIdCounter.increment();
         _safeMint(msg.sender, _quantity);
     }
-    function transferToken(address _owner, address _token, uint _amount) public {
-        ERC20(_token).transferFrom(_owner, address(this), _amount);
+    
+    function transferToken(address _owner, address _token, uint _amount) internal returns (bool){
+        return ERC20(_token).transferFrom(_owner, address(this), _amount);
     }
-    //function safeMint(address to) public onlyOwner {
-    //    uint256 tokenId = _tokenIdCounter.current();
-    //    _tokenIdCounter.increment();
-    //   _safeMint(to, tokenId);
-    //}
-
-    // The following functions are overrides required by Solidity.
-
-    // function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-    //     internal
-    //     override(ERC721A, ERC721Enumerable)
-    // {
-    //     super._beforeTokenTransfer(from, to, tokenId);
-    // }
-
-//     function supportsInterface(bytes4 interfaceId)
-//         public
-//         view
-//         override(ERC721, ERC721Enumerable)
-//         returns (bool)
-//     {
-//         return super.supportsInterface(interfaceId);
-//     }
-  function burn(uint256 _tokenId) public {
+    
+    function burn(uint256 _tokenId) public {
         require(ownerOf(_tokenId)==msg.sender,"Not the owner.");
         _burn(_tokenId, true);
-  }
-  function burnBatch(uint256[] memory _tokenIds) public {
+    }
+    function burnBatch(uint256[] memory _tokenIds) public {
         uint256 i = 0;
         for (i; i < _tokenIds.length;i++) {
             require(ownerOf(_tokenIds[i])==msg.sender,"Not the owner.");
             _burn(_tokenIds[i], true);
+        }
+    }
 }
