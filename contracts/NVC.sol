@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.4;
 
-import "https://github.com/chiru-labs/ERC721A/blob/main/contracts/ERC721A.sol";
+import "./ERC721A.sol";
 // import "https://github.com/chiru-labs/ERC721A-Upgradeable/blob/main/contracts/ERC721AUpgradeable.sol";
 // import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "./Ownable.sol";
+import "./Counters.sol";
 
 interface ERC20 {
   function balanceOf(address owner) external view returns (uint);
