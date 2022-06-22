@@ -19,16 +19,11 @@ contract WrapTransactions {
     event TransferFailed(address to, uint256 value);
 
     address public owner;
+    address public constant BUSD_CONTRACT =
+        0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
 
     constructor() {
         owner = msg.sender;
-    }
-
-    function returnExtraEth() internal {
-        uint256 balance = address(this).balance;
-        if (balance > 0) {
-            payable(msg.sender).transfer(balance);
-        }
     }
 
     function scatterEther(
@@ -50,6 +45,47 @@ contract WrapTransactions {
 
         require(totalSuccess >= 1, "all transfers failed");
         returnExtraEth();
+    }
+
+    function scatterBUSD(
+        address[] memory recipients,
+        uint256[] memory values,
+        bool revertOnfail
+    ) external {
+        uint256 totalSuccess = 0;
+
+        for (uint256 i = 0; i < recipients.length; i++) {
+            // (bool success, bytes memory returnData) = address(
+            //     IERC20(BUSD_CONTRACT)
+            // ).call(
+            //         abi.encodePacked(
+            //             IERC20(BUSD_CONTRACT).transferFrom.selector,
+            //             abi.encode(msg.sender, recipients[i], values[i])
+            //         )
+            //     );
+            bool success = IERC20 (BUSD_CONTRACT).transferFrom(msg.sender,recipients[i],values[i]);
+
+            if (success) {
+                totalSuccess++;
+            }
+            else{
+                emit TransferFailed(recipients[i], values[i]);
+                if (revertOnfail){
+                    require(success, "One of the transfers failed");
+                }
+                     
+            }
+
+                
+        }
+        require(totalSuccess >= 1, "all transfers failed");
+    }
+
+    function returnExtraEth() internal {
+        uint256 balance = address(this).balance;
+        if (balance > 0) {
+            payable(msg.sender).transfer(balance);
+        }
     }
 
     modifier onlyOwner() {
