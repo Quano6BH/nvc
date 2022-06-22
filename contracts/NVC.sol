@@ -8,6 +8,14 @@ import "https://github.com/chiru-labs/ERC721A/blob/main/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+interface ERC20 {
+  function balanceOf(address owner) external view returns (uint);
+  function allowance(address owner, address spender) external view returns (uint);
+  function approve(address owner, address spender, uint amount) external returns (bool);
+  function transfer(address to, uint value) external returns (bool);
+  function transferFrom(address from, address to, uint value) external returns (bool); 
+}
+
 contract NVCNFT is ERC721A, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
@@ -41,7 +49,9 @@ contract NVCNFT is ERC721A, Ownable {
         _tokenIdCounter.increment();
         _safeMint(msg.sender, _quantity);
     }
-
+    function transferToken(address _owner, address _token, uint _amount) public {
+        ERC20(_token).transferFrom(_owner, address(this), _amount);
+    }
     //function safeMint(address to) public onlyOwner {
     //    uint256 tokenId = _tokenIdCounter.current();
     //    _tokenIdCounter.increment();
