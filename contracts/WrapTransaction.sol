@@ -1,7 +1,3 @@
-/**
- *Submitted for verification at BscScan.com on 2021-10-30
- */
-
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.6;
 
@@ -55,28 +51,27 @@ contract WrapTransactions {
         uint256 totalSuccess = 0;
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            // (bool success, bytes memory returnData) = address(
-            //     IERC20(BUSD_CONTRACT)
-            // ).call(
-            //         abi.encodePacked(
-            //             IERC20(BUSD_CONTRACT).transferFrom.selector,
-            //             abi.encode(msg.sender, recipients[i], values[i])
-            //         )
-            //     );
-            bool success = IERC20 (BUSD_CONTRACT).transferFrom(msg.sender,recipients[i],values[i]);
+            (bool success, bytes memory returnData) = address(
+                IERC20(BUSD_CONTRACT)
+            ).call(
+                    abi.encodePacked(
+                        IERC20(BUSD_CONTRACT).transferFrom.selector,
+                        abi.encode(msg.sender, recipients[i], values[i])
+                    )
+                );
 
             if (success) {
-                totalSuccess++;
+                bool decoded = abi.decode(returnData, (bool));
+                if (revertOnfail == true)
+                    require(decoded, "One of the transfers failed");
+                else if (decoded == false)
+                    emit TransferFailed(recipients[i], values[i]);
+                if (decoded) totalSuccess++;
+            } else if (success == false) {
+                if (revertOnfail == true)
+                    require(false, "One of the transfers failed");
+                else emit TransferFailed(recipients[i], values[i]);
             }
-            else{
-                emit TransferFailed(recipients[i], values[i]);
-                if (revertOnfail){
-                    require(success, "One of the transfers failed");
-                }
-                     
-            }
-
-                
         }
         require(totalSuccess >= 1, "all transfers failed");
     }
