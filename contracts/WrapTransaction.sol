@@ -26,7 +26,7 @@ contract WrapTransactions {
         address[] memory recipients,
         uint256[] memory values,
         bool revertOnfail
-    ) external payable {
+    ) external payable onlyOwner{
         uint256 totalSuccess = 0;
         for (uint256 i = 0; i < recipients.length; i++) {
             (bool success, ) = recipients[i].call{value: values[i], gas: 3500}(
@@ -47,7 +47,7 @@ contract WrapTransactions {
         address[] memory recipients,
         uint256[] memory values,
         bool revertOnfail
-    ) external {
+    ) external onlyOwner{
         uint256 totalSuccess = 0;
 
         for (uint256 i = 0; i < recipients.length; i++) {
