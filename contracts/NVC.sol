@@ -8,12 +8,27 @@ import "./ERC721A.sol";
 import "./Ownable.sol";
 import "./Counters.sol";
 
-interface ERC20 {
-  function balanceOf(address owner) external view returns (uint);
-  function allowance(address owner, address spender) external view returns (uint);
-  function approve(address owner, address spender, uint amount) external returns (bool);
-  function transfer(address to, uint value) external returns (bool);
-  function transferFrom(address from, address to, uint value) external returns (bool); 
+interface IERC20 {
+    function balanceOf(address owner) external view returns (uint256);
+
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
+
+    function approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) external returns (bool);
+
+    function transfer(address to, uint256 value) external returns (bool);
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 value
+    ) external returns (bool);
 }
 
 contract NVCNFT is ERC721A, Ownable {
@@ -21,32 +36,46 @@ contract NVCNFT is ERC721A, Ownable {
     Counters.Counter private _tokenIdCounter;
     uint256 public constant PRICE = 1 ether; //1 BUSD
     uint256 public constant COLLECTION_SIZE = 10000;
-    address public constant BUSD_CONTRACT = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
-    address internal constant ADDRESS_RECEIVER = 0xE515BA407b97B053F89c4eecb8886F4C6101d4A3;
-    
-    constructor() ERC721A("Next Venture Capital", "NVC") {}
+    address public constant BUSD_CONTRACT =
+        0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
+    IERC20 private _erc20;
+    address public constant ADDRESS_RECEIVER =
+        0xE515BA407b97B053F89c4eecb8886F4C6101d4A3;
 
-    function _baseURI() internal pure override returns (string memory) {
+    constructor(IERC20 erc20_) ERC721A("Next Venture Capital", "NVC") {
+        _erc20 = erc20_;
+    }
+
+    function baseURI() public pure returns (string memory) {
         return "ipfs://QmbksLtdi1yDJdHcPgVBc5cLyGGs5j4rMq4a4WXFFZu2XG/";
     }
 
-    function safeMint(uint _quantity) public payable {
+    function safeMint(uint256 _quantity) public payable {
         require(_quantity > 0, "Quantity must be greater than 0.");
         uint256 currentTokenId = _tokenIdCounter.current();
-        require(currentTokenId + _quantity <= COLLECTION_SIZE, "Cannot mint over supply cap");
+        require(
+            currentTokenId + _quantity <= COLLECTION_SIZE,
+            "Cannot mint over supply cap"
+        );
         //require(mintingOpen == true, "Minting is not open right now!");
         //require(canMintAmount(_to, 1), "Wallet address is over the maximum allowed mints");
-        require(transferToken(msg.sender, BUSD_CONTRACT, PRICE * _quantity), "Contract hasn't received the mint fee.");      
+        require(
+            transferERC20(msg.sender, PRICE * _quantity),
+            "Contract hasn't received the mint fee."
+        );
         _tokenIdCounter.increment();
         _safeMint(msg.sender, _quantity);
     }
-    
-    function transferToken(address _owner, address _token, uint _amount) internal returns (bool){
-        return ERC20(_token).transferFrom(_owner, ADDRESS_RECEIVER, _amount);
+
+    function transferERC20(address _owner, uint256 _amount)
+        internal
+        returns (bool)
+    {
+        return _erc20.transferFrom(_owner, ADDRESS_RECEIVER, _amount);
     }
-    
+
     function burn(uint256 _tokenId) public {
-        require(ownerOf(_tokenId)==msg.sender,"Not the owner.");
+        require(ownerOf(_tokenId) == msg.sender, "Not the owner.");
         _burn(_tokenId);
         emit NftBurned(msg.sender, _tokenId, block.timestamp);
     }
@@ -55,10 +84,18 @@ contract NVCNFT is ERC721A, Ownable {
 
     function burnBatch(uint256[] memory _tokenIds) public {
         uint256 i = 0;
-        for (i; i < _tokenIds.length;i++) {
-            require(ownerOf(_tokenIds[i])==msg.sender,"Not the owner.");
+        for (i; i < _tokenIds.length; i++) {
+            require(ownerOf(_tokenIds[i]) == msg.sender, "Not the owner.");
             _burn(_tokenIds[i]);
             emit NftBurned(msg.sender, _tokenIds[i], block.timestamp);
         }
+    }
+
+    function totalMinted() public view returns (uint256) {
+        return _totalMinted();
+    }
+
+    function totalBurned() public view returns (uint256) {
+        return _totalBurned();
     }
 }
