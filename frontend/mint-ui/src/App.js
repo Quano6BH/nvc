@@ -15,7 +15,7 @@ function App() {
   const [connectedAccount, setConnectedAccount] = useState();
   const [mintAmount, setMintAmount] = useState(1);
   const [burningTokenIds, setBurningTokenIds] = useState(new Set());
-
+  const START_BLOCK = 20437517;
   const { nftContractAddress, busdContractAddress } = configs;
   const changeAccount = (accounts) => {
     if (accounts && accounts.length > 0) {
@@ -89,18 +89,35 @@ function App() {
   // }
   const fetchOwnNfts = async (ownerAddress) => {
     nftContract.getPastEvents('Transfer', {
-      filter: { from: '0x0000000000000000000000000000000000000000', to: ownerAddress },
-      fromBlock: 0,
+      filter: { to: ownerAddress },
+      fromBlock: START_BLOCK,
       toBlock: 'latest'
     })
-      .then(async (events) => {
-        let nfts = events.map((event) => {
-          const { returnValues } = event;
-          const { tokenId } = returnValues;
-          return { tokenId: tokenId };
+      .then(async (transferEvents) => {
+        nftContract.getPastEvents('NftBurned', {
+          filter: { owner: ownerAddress },
+          fromBlock: START_BLOCK,
+          toBlock: 'latest'
         })
-        // setOwnedNfts([...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts]);
-        setOwnedNfts(nfts);
+          .then(async (burnedEvents) => {
+            let transferNfts = transferEvents.map((event) => {
+              const { returnValues } = event;
+              const { tokenId } = returnValues;
+              return { tokenId: tokenId };
+            })
+            let burnedNfts = burnedEvents.map((event) => {
+              const { returnValues } = event;
+              const { tokenId } = returnValues;
+              return { tokenId: tokenId };
+            })
+
+            let burnedFlatten = burnedNfts.map(({ tokenId }) => tokenId);
+            console.log(burnedFlatten,burnedNfts)
+            let nfts = transferNfts.filter(transferNft => !burnedFlatten.includes(transferNft.tokenId));
+            // setOwnedNfts([...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts]);
+            setOwnedNfts(nfts);
+          })
+
       });
   }
 
@@ -112,11 +129,11 @@ function App() {
   const onMint = async (e) => {
 
     nftContract.methods
-      .mintToMultiple(connectedAccount, mintAmount)
-      .send({ from: connectedAccount, to: nftContractAddress })
+      .safeMint(mintAmount)
+      .send({ from: connectedAccount })
       .then(result => {
         // NotificationManager.success(`Mint successfully.`);
-        console.log(result)
+        fetchOwnNfts(connectedAccount)
       })
       .catch(error => {
         // NotificationManager.error(`Mint failed.`);
@@ -124,28 +141,53 @@ function App() {
 
       });
   }
-  const onCheckboxChange = ({target}, tokenId) => {
-    const {checked} = target;
-    
-    if(checked){
-      if(burningTokenIds.has(tokenId))
-        return;
-      burningTokenIds.add(tokenId)
-    }else{
-      if(!burningTokenIds.has(tokenId))
-        return;
-      burningTokenIds.delete(tokenId)
+  const onCheckboxChange = ({ target }, tokenId) => {
+    const { checked } = target;
+
+    console.log(checked, burningTokenIds)
+    if (burningTokenIds) {
+      if (checked) {
+        burningTokenIds.add(tokenId)
+      } else {
+        burningTokenIds.delete(tokenId)
+      }
     }
-    
-    
-    setBurningTokenIds(burningTokenIds);
+
+
+    setBurningTokenIds(burningTokenIds ? new Set(burningTokenIds) : new Set());
   }
   const onBurn = (tokenId) => {
+    nftContract.methods
+      .burn(tokenId)
+      .send({ from: connectedAccount })
+      .then(result => {
+        // NotificationManager.success(`Mint successfully.`);
+        fetchOwnNfts(connectedAccount)
+      })
+      .catch(error => {
+        // NotificationManager.error(`Mint failed.`);
+        console.error(error)
 
+      });
   }
   const onBurnMultiple = () => {
     console.log(burningTokenIds)
+    if (burningTokenIds.size <= 0)
+      alert("Invlid tokens");
+    nftContract.methods
+      .burnBatch(Array.from(burningTokenIds))
+      .send({ from: connectedAccount })
+      .then(result => {
+        // NotificationManager.success(`Mint successfully.`);
+        fetchOwnNfts(connectedAccount)
+      })
+      .catch(error => {
+        // NotificationManager.error(`Mint failed.`);
+        console.error(error)
+
+      });
   }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -176,16 +218,19 @@ function App() {
               <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
               <button onClick={onMint}>Mint</button>
             </div>
+            <br/>
             <div>
-              <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
-              <button onClick={onBurnMultiple}>Burn many</button>
+              {/* <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} /> */}
+              <span style={{ color: "white" }}>{Array.from(burningTokenIds).join(", ")}</span> 
+              {burningTokenIds.size > 0 ? <button onClick={onBurnMultiple}>Burn many</button> : <span style={{ color: "white" }}>Nothing to burn</span>}
+
             </div>
             <br />
             {ownedNfts ? <>
               <div className='nfts'>
                 {ownedNfts.map(({ tokenId }) =>
                   <div className='nft-item' key={`own-token-${tokenId}`}>
-                    <input type={"checkbox"} onChange={(e) => onCheckboxChange(e,tokenId)} />
+                    <input type={"checkbox"} onChange={(e) => onCheckboxChange(e, tokenId)} />
                     <img src={`https://ipfs.io/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} alt={tokenId} />
                     <button onClick={(e) => onBurn(tokenId)}>Burn</button>
                   </div>)
