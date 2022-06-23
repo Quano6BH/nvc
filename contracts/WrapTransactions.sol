@@ -16,10 +16,11 @@ interface IERC20 {
 contract WrapTransactions is Ownable{
     event TransferFailed(address to, uint256 value);
 
-    address public constant BUSD_CONTRACT =
-        0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
-
-    constructor() {}
+    address public constant BUSD_CONTRACT = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
+    IERC20 private _erc20;
+    constructor(IERC20 erc20_) {
+        _erc20 = erc20_;
+    }
 
     function scatterEther(
         address[] memory recipients,
@@ -51,10 +52,10 @@ contract WrapTransactions is Ownable{
 
         for (uint256 i = 0; i < recipients.length; i++) {
             (bool success, bytes memory returnData) = address(
-                IERC20(BUSD_CONTRACT)
+                _erc20
             ).call(
                     abi.encodePacked(
-                        IERC20(BUSD_CONTRACT).transferFrom.selector,
+                        _erc20.transferFrom.selector,
                         abi.encode(msg.sender, recipients[i], values[i])
                     )
                 );
