@@ -10,40 +10,14 @@ interface IERC20 {
         address from,
         address to,
         uint256 value
-    ) external returns (bool);
+    ) external returns (bool, bytes memory);
 }
 
-contract WrapTransactions is Ownable{
+contract WrapTransactions is Ownable {
     event TransferFailed(address to, uint256 value);
 
-    address public constant BUSD_CONTRACT = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7;
-    IERC20 private _erc20;
-    constructor(IERC20 erc20_) {
-        _erc20 = erc20_;
-    }
-
-    function scatterEther(
-        address[] memory recipients,
-        uint256[] memory values,
-        bool revertOnfail
-    ) external payable {
-        uint256 totalSuccess = 0;
-        for (uint256 i = 0; i < recipients.length; i++) {
-            (bool success, ) = recipients[i].call{value: values[i], gas: 3500}(
-                ""
-            );
-            if (revertOnfail) require(success, "One of the transfers failed");
-            else if (success == false) {
-                emit TransferFailed(recipients[i], values[i]);
-            }
-            if (success) totalSuccess++;
-        }
-
-        require(totalSuccess >= 1, "all transfers failed");
-        returnExtraEth();
-    }
-
-    function scatterBUSD(
+    function scatterTokens(
+        IERC20 token,
         address[] memory recipients,
         uint256[] memory values,
         bool revertOnfail
@@ -51,36 +25,26 @@ contract WrapTransactions is Ownable{
         uint256 totalSuccess = 0;
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            (bool success, bytes memory returnData) = address(
-                _erc20
-            ).call(
-                    abi.encodePacked(
-                        _erc20.transferFrom.selector,
-                        abi.encode(msg.sender, recipients[i], values[i])
-                    )
-                );
+            (bool success, bytes memory returnData) = token.transferFrom(msg.sender, recipients[i], values[i]);
+
 
             if (success) {
                 bool decoded = abi.decode(returnData, (bool));
-                if (revertOnfail == true)
-                    require(decoded, "One of the transfers failed");
-                else if (decoded == false)
+                require(revertOnfail && decoded, "One of the transfers failed");
+                    
+                if (!decoded)
                     emit TransferFailed(recipients[i], values[i]);
-                if (decoded) totalSuccess++;
-            } else if (success == false) {
-                if (revertOnfail == true)
-                    require(false, "One of the transfers failed");
-                else emit TransferFailed(recipients[i], values[i]);
+                else 
+                    totalSuccess++;
+
+            } else {
+                
+                require(revertOnfail, "One of the transfers failed");
+
+                emit TransferFailed(recipients[i], values[i]);
             }
         }
+
         require(totalSuccess >= 1, "all transfers failed");
     }
-
-    function returnExtraEth() internal {
-        uint256 balance = address(this).balance;
-        if (balance > 0) {
-            payable(msg.sender).transfer(balance);
-        }
-    }
-
 }
