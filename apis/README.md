@@ -1,19 +1,57 @@
 # NVC API description
 
-## wallets/{walletAddress}
+## GET /requestAuthenticate
+### Body
+```
+{
+	walletAddress:""
+}
+```
 
-### statusCode 200
+
+#### statusCode 200
+```
+{
+	nonce:"",
+	signMessage:""
+}
+```
+#### statusCode 404 => not admin
+
+## POST /authenticate
+### Body
+```
+{
+	walletAddress:"",
+	signature:"",
+	refreshToken:""
+}
+```
+
+#### statusCode 200
+```
+{
+	accessToken:"",
+	expiresIn:"",
+	refreshToken:"",
+}
+```
+#### statusCode 404 => not admin
+
+## GET /wallets/{walletAddress}
+
+#### statusCode 200
 ```
 {
 	walletId:1,
 	totalEarnInCurrentMonth:1230,// by $, lãi và gốc đã nhận trong tháng
 }
 ```
-### statusCode 400 => address sai định dạng
-### statusCode 404=> k tìm thấy address trong database
+#### statusCode 400 => address sai định dạng
+#### statusCode 404 => k tìm thấy address trong database
 
-## wallets/walletId/nfts/{nftId}
-### statusCode 200
+## GET /wallets/{walletId}/nfts/{nftId}
+#### statusCode 200
 ``` {
 	currentOwner:"0x..",
 	holdDaysInCurrentMonth: 3,//number of days the NFT owned by the owner
@@ -29,9 +67,9 @@
 	]
 } 
 ```
-### statusCode 404=> k tìm thấy address/NFT trong database
+#### statusCode 404 => k tìm thấy address/NFT trong database
 
-## collections/{collectionId}
+## GET /collections/{collectionId}
 ```
 {
 	from:"",
@@ -44,4 +82,17 @@
 	}]
 }
 ```
-### statusCode 404=> k tìm thấy collection trong database
+#### statusCode 404 => k tìm thấy collection trong database
+
+## GET /collections/{collectionId}/report
+> Admin only
+
+#### statusCode 200
+```
+{
+	uniqueHolders: 12,
+	totalPay:123999,// By $, tong so lai va goc phai tra cho toan bo holders,
+	estimate:,//tong so lai phai tra cho den ki end
+}
+```
+#### statusCode 403 => not admin
