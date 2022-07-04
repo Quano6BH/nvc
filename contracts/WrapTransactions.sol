@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
-import "./Ownable.sol";
+import "./access/Ownable.sol";
 
 interface IERC20 {
     function transfer(address to, uint256 value) external returns (bool);
