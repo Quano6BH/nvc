@@ -10,9 +10,9 @@
 }
 ```
 ### statusCode 400 => address sai định dạng
-### statusCode 404=> k tìm thấy address trong database
+### statusCode 404 => k tìm thấy address trong database
 
-## wallets/walletId/nfts/{nftId}
+## wallets/{walletId}/nfts/{nftId}
 ### statusCode 200
 ``` {
 	currentOwner:"0x..",
@@ -29,7 +29,7 @@
 	]
 } 
 ```
-### statusCode 404=> k tìm thấy address/NFT trong database
+### statusCode 404 => k tìm thấy address/NFT trong database
 
 ## collections/{collectionId}
 ```
@@ -44,4 +44,17 @@
 	}]
 }
 ```
-### statusCode 404=> k tìm thấy collection trong database
+### statusCode 404 => k tìm thấy collection trong database
+
+## collections/{collectionId}/report
+> Admin only
+
+### statusCode 200
+```
+{
+	uniqueHolders: 12,
+	totalPay:123999,// By $, tong so lai va goc phai tra cho toan bo holders,
+	estimate:,//tong so lai phai tra cho den ki end
+}
+```
+### statusCode 403 => not admin
