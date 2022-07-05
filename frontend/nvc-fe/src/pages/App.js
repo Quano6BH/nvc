@@ -1,11 +1,13 @@
 import { useEffect, useContext } from 'react';
-import { GlobalContext, GlobalContextProvider } from '../contexts/GlobalContext';
+import { GlobalContext } from '../contexts/GlobalContext';
 import './App.css';
 import Header from './header';
 import Main from './main';
 import { loadWeb3 } from '../contracts'
+import { getCollection } from '../apis/nvcApi'
 const App = () => {
-  const { setConnectedWallet } = useContext(GlobalContext);
+  const { setConnectedWallet, setCollection } = useContext(GlobalContext);
+  const collectionId = 1;
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
@@ -13,17 +15,22 @@ const App = () => {
       },
 
     });
-
   })
-  return (
-    <GlobalContextProvider>
 
+  useEffect(() => {
+    getCollection(collectionId).then(rs => {
+      setCollection(rs.data)
+    })
+  }, [collectionId])
+
+  return (
+    <>
       <Header />
       <Main />
       <footer>
 
       </footer>
-    </GlobalContextProvider>
+    </>
   );
 }
 

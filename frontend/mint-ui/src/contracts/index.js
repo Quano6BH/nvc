@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 
-const requestApprovalForTokenAsync = async (contract, forAccount, amount) => {
-    await contract.methods.approve(forAccount, amount).send({ from: forAccount });
+const requestApprovalForTokenAsync = async (contract, spender, owner, amount) => {
+    await contract.methods.approve(spender, amount).send({ from: owner });
 }
 
 const isMetaMaskInstalled = () => {

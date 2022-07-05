@@ -9,13 +9,15 @@ import configs from './configs';
 function App() {
   const [nftContract, setNftContract] = useState();
   const [currentBusd, setCurrentBUSD] = useState(null);
+  const [allowance, setAllowance] = useState(0);
   const [ownedNfts, setOwnedNfts] = useState([]);
   const [busdContract, setBusdContract] = useState();
   const BASE_IMAGE_CID = "QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL";
   const [connectedAccount, setConnectedAccount] = useState();
   const [mintAmount, setMintAmount] = useState(1);
+  const [approveAmount, setApproveAmount] = useState(0);
   const [burningTokenIds, setBurningTokenIds] = useState(new Set());
-  const START_BLOCK = 20437517;
+  const START_BLOCK = 20442946;
   const { nftContractAddress, busdContractAddress } = configs;
   const changeAccount = (accounts) => {
     if (accounts && accounts.length > 0) {
@@ -25,6 +27,7 @@ function App() {
       setConnectedAccount(null);
     }
   }
+
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
@@ -43,6 +46,18 @@ function App() {
       }
     });
   }, [busdContractAddress])
+
+  useEffect(() => {
+    if (!busdContract || !nftContract || !connectedAccount)
+      return;
+    busdContract.methods.allowance(connectedAccount, nftContract._address)
+      .call()
+      .then(async (result) => {
+        setAllowance(parseInt(result));
+      })
+
+  }, [connectedAccount, busdContract, nftContract])
+
   useEffect(() => {
     const contractAddress = nftContractAddress;
     loadContract(nftAbi, contractAddress, {
@@ -53,6 +68,7 @@ function App() {
       }
     });
   }, [nftContractAddress])
+
   useEffect(() => {
     if (busdContract == null || connectedAccount == null)
       return;
@@ -60,6 +76,7 @@ function App() {
       setCurrentBUSD(result);
     })
   }, [busdContract, connectedAccount])
+
   const onConnectWallet = async (e) => {
     await connectWallet({
       onAccountConnected: (accounts) => {
@@ -87,6 +104,7 @@ function App() {
   //         }
   //     }
   // }
+
   const fetchOwnNfts = async (ownerAddress) => {
     nftContract.getPastEvents('Transfer', {
       filter: { to: ownerAddress },
@@ -112,7 +130,7 @@ function App() {
             })
 
             let burnedFlatten = burnedNfts.map(({ tokenId }) => tokenId);
-            console.log(burnedFlatten,burnedNfts)
+            console.log(burnedFlatten, burnedNfts)
             let nfts = transferNfts.filter(transferNft => !burnedFlatten.includes(transferNft.tokenId));
             // setOwnedNfts([...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts]);
             setOwnedNfts(nfts);
@@ -123,7 +141,7 @@ function App() {
 
   const onRequestApproval = async () => {
 
-    await requestApprovalForTokenAsync(busdContract, connectedAccount, 0);
+    await requestApprovalForTokenAsync(busdContract, nftContract._address, connectedAccount, (approveAmount * 100000000 * 10000000000).toString());
   }
 
   const onMint = async (e) => {
@@ -212,16 +230,23 @@ function App() {
             <p>Connected wallet: {shortenAddress(connectedAccount)}</p>
             <p>Current Balance: {currentBusd}</p>
             <br />
-            <button onClick={onRequestApproval}>Request Approval</button>
+            {allowance <= 0
+              ?
+              <div>
+                <input type={"number"} onChange={e => { setApproveAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
+                <button onClick={onRequestApproval}>Request Approval</button>
+              </div>
+              : <span style={{ color: "white" }}>Approved: {allowance}</span>}
+
             <br />
             <div>
               <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
               <button onClick={onMint}>Mint</button>
             </div>
-            <br/>
+            <br />
             <div>
               {/* <input type={"number"} onChange={e => { setMintAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} /> */}
-              <span style={{ color: "white" }}>{Array.from(burningTokenIds).join(", ")}</span> 
+              <span style={{ color: "white" }}>{Array.from(burningTokenIds).join(", ")}</span>
               {burningTokenIds.size > 0 ? <button onClick={onBurnMultiple}>Burn many</button> : <span style={{ color: "white" }}>Nothing to burn</span>}
 
             </div>

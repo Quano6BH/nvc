@@ -1,7 +1,7 @@
 import logo from './assets/images/logo-bg.png';
 import './App.css';
 
-import { loadWeb3, loadContract, connectWallet, shortenAddress } from './contracts';
+import { loadWeb3, loadContract, connectWallet, shortenAddress, requestApprovalForTokenAsync } from './contracts';
 import { useEffect, useState } from 'react';
 import scatterAbi from './contracts/abis/scatter.json'
 import nftAbi from './contracts/abis/nft.json'
@@ -12,12 +12,15 @@ function App() {
   const [scatterContract, setScatterContract] = useState();
   const [nftContract, setNftContract] = useState();
   const [busdContract, setBusdContract] = useState();
+  const [allowance, setAllowance] = useState(0);
   const [currentBUSD, setCurrentBUSD] = useState(null);
   const [nftsBurned, setNftsBurned] = useState(null);
   const [nftHolders, setNftHolders] = useState(null);
   const [action, setAction] = useState(null);
-  const { nftContractAddress, scatterContractAddress , busdContractAddress } = configs;
+  const [approveAmount, setApproveAmount] = useState(0);
+  const { nftContractAddress, scatterContractAddress, busdContractAddress } = configs;
   const BASE_IMAGE_CID = "QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL";
+  const START_BLOCK = 20442946;
   //const busdContractAddress = configs.busdContractAddress;//"0x4e2442A6f7AeCE64Ca33d31756B5390860BF973E";
   // const getFirstBlockNumberOfContract = () => {
   //   nftContract.getPastEvents('Transfer', {
@@ -37,7 +40,7 @@ function App() {
   //     });
   // }
   const [connectedAccount, setConnectedAccount] = useState();
-  
+
   const changeAccount = (accounts) => {
     if (accounts && accounts.length > 0) {
       setConnectedAccount(accounts[0]);
@@ -60,7 +63,17 @@ function App() {
       }
     }, [])
 
-  }, [connectedAccount])
+  })
+  useEffect(() => {
+    if (!busdContract || !scatterContract || !connectedAccount)
+      return;
+    busdContract.methods.allowance(connectedAccount, scatterContract._address)
+      .call()
+      .then(async (result) => {
+        setAllowance(parseInt(result));
+      })
+
+  }, [connectedAccount, busdContract, scatterContract])
 
   useEffect(() => {
     const contractAddress = nftContractAddress;
@@ -83,6 +96,7 @@ function App() {
       }
     });
   }, [scatterContractAddress])
+
   const onConnectWallet = async (e) => {
     await connectWallet({
       onAccountConnected: (accounts) => {
@@ -93,43 +107,77 @@ function App() {
       }
     })
   }
-  const onGetNftHolders = () => {
-    nftContract.getPastEvents('Transfer', {
-      // filter: { from: '0x0000000000000000000000000000000000000000' },
-      fromBlock: 0,
-      toBlock: 'latest'
-    }).then(function (events) {
-      let nfts = events.map((event) => {
-        const { returnValues } = event;
-        const { tokenId, to } = returnValues;
-        return { wallet: to, tokenId: tokenId };
-      })
 
-      let latest = [];
-      const groupByTokenId = groupBy(nfts, 'tokenId');
-      for (let key of Object.keys(groupByTokenId)) {
-        latest.push({
-          tokenId: key,
-          wallet: groupByTokenId[key].at(-1).wallet
+  const onGetNftHolders = () => {
+    // nftContract.getPastEvents('Transfer', {
+    //   // filter: { from: '0x0000000000000000000000000000000000000000' },
+    //   fromBlock: START_BLOCK,
+    //   toBlock: 'latest'
+    // }).then(function (events) {
+    //   let nfts = events.map((event) => {
+    //     const { returnValues } = event;
+    //     const { tokenId, to } = returnValues;
+    //     return { wallet: to, tokenId: tokenId };
+    //   })
+
+    //   let latest = [];
+    //   const groupByTokenId = groupBy(nfts, 'tokenId');
+    //   for (let key of Object.keys(groupByTokenId)) {
+    //     latest.push({
+    //       tokenId: key,
+    //       wallet: groupByTokenId[key].at(-1).wallet
+    //     })
+    //   }
+    //   // setNftsBurned([...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts]);
+    //   setAction("holder");
+    //   setNftHolders(latest);
+    // });
+    nftContract.getPastEvents('Transfer', {
+      // filter: { to: connectedAccount },
+      fromBlock: START_BLOCK,
+      toBlock: 'latest'
+    })
+      .then(async (transferEvents) => {
+        nftContract.getPastEvents('NftBurned', {
+          // filter: { owner: connectedAccount },
+          fromBlock: START_BLOCK,
+          toBlock: 'latest'
         })
-      }
-      // setNftsBurned([...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts]);
-      setAction("holder");
-      setNftHolders(latest);
-    });
+          .then(async (burnedEvents) => {
+            let transferNfts = transferEvents.map((event) => {
+              const { returnValues } = event;
+              const { tokenId, to } = returnValues;
+              return { wallet: to, tokenId: tokenId };
+            })
+            let burnedNfts = burnedEvents.map((event) => {
+              const { returnValues } = event;
+              const { tokenId, owner } = returnValues;
+              return {  wallet: owner, tokenId: tokenId };
+            })
+
+            let burnedFlatten = burnedNfts.map(({ tokenId }) => tokenId);
+            console.log(burnedFlatten, burnedNfts)
+            let nfts = transferNfts.filter(transferNft => !burnedFlatten.includes(transferNft.tokenId));
+            // setOwnedNfts([...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts,...nfts]);
+            setAction("holder");
+            setNftHolders(nfts);
+          })
+
+      });
   }
+
   const onGetBurnedNfts = () => {
 
-    nftContract.getPastEvents('Transfer', {
-      filter: { from: '0x0000000000000000000000000000000000000000' },
-      fromBlock: 0,
+    nftContract.getPastEvents('NftBurned', {
+      // filter: { owner: connectedAccount },
+      fromBlock: START_BLOCK,
       toBlock: 'latest'
     })
       .then(function (events) {
         let nfts = events.map((event) => {
           const { returnValues } = event;
-          const { tokenId, to } = returnValues;
-          return { wallet: to, tokenId: tokenId };
+          const { tokenId, owner } = returnValues;
+          return { wallet: owner, tokenId: tokenId };
         })
         // setNftsBurned([...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts, ...nfts]);
 
@@ -137,12 +185,14 @@ function App() {
         setNftsBurned(nfts);
       });
   }
+
   var groupBy = (array, key) => {
     return array.reduce((rv, x) => {
       (rv[x[key]] = rv[x[key]] || []).push(x);
       return rv;
     }, {});
   };
+
   const getWalletsWithAmounts = (nfts) => {
     const groupByWallet = groupBy(nfts, 'wallet');
     const walletsWithAmount = []
@@ -155,23 +205,32 @@ function App() {
     }
     return walletsWithAmount;
   }
+
   const onMultiSend = async (nfts) => {
     const walletsWithAmount = getWalletsWithAmounts(nfts);
 
-    await scatterContract.methods.scatterTokenSimple(
-      busdContractAddress,
+    await scatterContract.methods.scatterBUSD(
       walletsWithAmount.map(({ wallet }) => wallet),
       walletsWithAmount.map(({ amount }) => (amount * 100000000 * 10000000000).toString()),
       true
     ).send({ from: connectedAccount });
   }
+
   const onRequestApproval = async () => {
-    await busdContract.methods.approve(connectedAccount, 0).send({ from: connectedAccount });
+
+    await requestApprovalForTokenAsync(busdContract, scatterContract._address, connectedAccount, (approveAmount * 100000000 * 10000000000).toString());
   }
+  const renderApproval = () => allowance <= 0
+    ?
+    <div>
+      <input type={"number"} onChange={e => { setApproveAmount(e.target.value) }} placeholder="input number" defaultValue={1} min={1} />
+      <button onClick={onRequestApproval}>Request Approval</button>
+    </div>
+    : <span style={{ color: "white" }}>Approved: {allowance}</span>;
   const renderAction = (nfts,) => {
     return nfts && nfts.length > 0 ? <>
 
-      <button onClick={onRequestApproval}>Request Approval</button>
+      {renderApproval()}
       <button onClick={(e) => onMultiSend(nfts)}>Send Monei</button>
       <br />
       <table>
@@ -224,7 +283,7 @@ function App() {
           ? (
             <>
               <p>Nft Contract: {shortenAddress(nftContract?._address)}</p>
-              <p>Multisend Contract: {shortenAddress(nftContract?._address)}</p>
+              <p>Multisend Contract: {shortenAddress(scatterContract?._address)}</p>
               <p>Connected wallet: {shortenAddress(connectedAccount)}</p>
               <p>BUSD Balance: {currentBUSD}</p>
 
