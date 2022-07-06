@@ -1,10 +1,16 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { GlobalContext } from '../../contexts/GlobalContext';
-import { connectWallet } from '../../contracts';
+import { connectWallet, shortenAddress } from '../../contracts';
 import Countdown from 'react-countdown'
 import './header.css'
 const Header = () => {
     const { connectedWallet, setConnectedWallet, collection } = useContext(GlobalContext)
+    const [endDate, setEndDate] = useState()
+    useEffect(() => {
+        if (!collection?.end_date)
+            return;
+        setEndDate(collection?.end_date)
+    }, [collection?.end_date])
     const onConnectWallet = async (e) => {
         await connectWallet({
             onAccountConnected: (accounts) => {
@@ -14,22 +20,25 @@ const Header = () => {
     }
     const MemoCountdown = useMemo(() => {
         let end = new Date(Date.parse(collection?.end_date));
-        setInterval(() => { end = new Date(end - 1000) }, 1000)
 
-        return <>{`Days: s${end.getDay()}/ Hours: ${end.getHours()}/ Minutes: ${end.getMinutes()}/ Seconds: ${end.getSeconds()}`}</>;
+        return <Countdown
+            date={end}
+            intervalDelay={0}
+            precision={3}
+
+        // renderer={props => <div>{props.total}</div>}
+        ></Countdown>;
     },
-        [collection?.end_date]);
+        [endDate]);
 
-    console.log(collection)
-    console.log(collection?.end_date)
     return <header>
         <div className='countdown'>
             {MemoCountdown}
 
         </div>
-        {connectedWallet}
+
         <div className='connect-wallet-button' onClick={onConnectWallet}>
-            Connect Wallet
+            {connectedWallet ? shortenAddress(connectedWallet) : 'Connect Wallet'}
         </div>
         {/* <button onClick={onConnectWallet}>Connect Wallet</button> */}
     </header>

@@ -3,6 +3,7 @@ import { GlobalContext } from '../contexts/GlobalContext';
 import './App.css';
 import Header from './header';
 import Main from './main';
+import Announcement from './announcement';
 import { loadWeb3 } from '../contracts'
 import { getCollection } from '../apis/nvcApi'
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
 
   useEffect(() => {
     getCollection(collectionId).then(rs => {
+      // console.log(rs)
       setCollection(rs.data)
     })
   }, [collectionId])
@@ -26,6 +28,7 @@ const App = () => {
   return (
     <>
       <Header />
+      <Announcement/>
       <Main />
       <footer>
 

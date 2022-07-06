@@ -1,14 +1,22 @@
-
+import { useContext, useEffect, useState } from 'react';
+import { getCollectionReport } from '../../../apis/nvcApi';
+import { GlobalContext } from '../../../contexts/GlobalContext';
+import './admin.css'
 const Admin = () => {
-    return <>
-        <div>
-            <p>Unique holders: </p>
-            <p>Lãi + gốc phải trả cho toàn bộ holder:</p>
-            <p>Estimate trong 30 ngày:</p>
+    const [report, setReport] = useState();
+    const [collection] = useContext(GlobalContext);
+    useEffect(() => { 
+        getCollectionReport(1).then(rs=>{
+            setReport(rs.data)
+        })
 
-        </div>
-        <div>
-            Buy back announcement
+    })
+    return <>
+        <div class="admin">
+            <p>Unique holders: {report.uniqueHolders}</p>
+            <p>Lãi + gốc phải trả cho toàn bộ holder:{report.totalPay}</p>
+            <p>Estimate trong 30 ngày:{report.estimate}</p>
+
         </div>
     </>
 }
