@@ -40,6 +40,7 @@
     border-radius: 5px;
     padding: 1.5vh 8vh;
     flex-direction: column;
+    margin-top: 10px;
 }
 
 .inventory {

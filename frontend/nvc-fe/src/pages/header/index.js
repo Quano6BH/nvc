@@ -7,10 +7,10 @@ const Header = () => {
     const { connectedWallet, setConnectedWallet, collection } = useContext(GlobalContext)
     const [endDate, setEndDate] = useState()
     useEffect(() => {
-        if (!collection?.end_date)
+        if (!collection?.endDate)
             return;
-        setEndDate(collection?.end_date)
-    }, [collection?.end_date])
+        setEndDate(collection?.endDate)
+    }, [collection?.endDate])
     const onConnectWallet = async (e) => {
         await connectWallet({
             onAccountConnected: (accounts) => {
@@ -19,7 +19,7 @@ const Header = () => {
         });
     }
     const MemoCountdown = useMemo(() => {
-        let end = new Date(Date.parse(collection?.end_date));
+        let end = new Date(Date.parse(collection?.endDate));
 
         return <Countdown
             date={end}

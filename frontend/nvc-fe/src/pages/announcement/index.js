@@ -7,7 +7,7 @@ const Announcement = () => {
     return <>
         {collection?.updates 
         ? collection?.updates.map(({ message }) => <section>
-            Announcement: We will buy back 10%
+            {message}
         </section>) : <></>}
 
     </>

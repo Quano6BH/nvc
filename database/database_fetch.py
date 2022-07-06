@@ -12,7 +12,13 @@ class SqlConnector:
     WALLET = "NVC.Wallet"
 
     def __init__(self):
-        SERVER = self.get_server_creds()
+        SERVER = {
+            "host":"34.87.174.70",
+            "port":3306,
+            "username":"root",
+            "password":"Nvc123!@#",
+            "database":"NVC",
+        }
         self.sql = MySQLdb.connect(
             host=SERVER["host"],
             port=SERVER["port"],

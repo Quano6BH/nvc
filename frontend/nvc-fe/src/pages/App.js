@@ -28,7 +28,6 @@ const App = () => {
   return (
     <>
       <Header />
-      <Announcement/>
       <Main />
       <footer>
 
