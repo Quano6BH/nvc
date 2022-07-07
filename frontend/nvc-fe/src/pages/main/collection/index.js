@@ -27,7 +27,7 @@ const Collection = ({ collectionId }) => {
     useEffect(() => {
         if (!selectedToken)
             return;
-        getNftDetail(collection?.id, selectedToken, connectedWallet)
+        getNftDetail(collection?.id, 8, "0xd9A98d4b857C8a8c8D76Fd8E8904a0a29B915138")
             .then((rs) => {
                 setNftStats(rs.data)
             })

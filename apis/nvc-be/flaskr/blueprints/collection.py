@@ -1,26 +1,18 @@
-from flask import current_app, Blueprint, request
+import datetime
+from flask import current_app, Blueprint, jsonify, request
+
+from flaskr.mysql import SqlConnector
 collection = Blueprint('collections', __name__, url_prefix='/collections')
 
 
 @collection.route('/<id>')
 def index(id):
-    return {
-        "id": id,
-        "startDate": "2022-07-01",
-        "endDate": "2023-05-31",
-        "ipfs": "asdasd",
-        "totalSupply": 10000,
-        "address": "0xasd",
-        "networkId": 3,
-        "updates": [
-           {
-               "principal": 10000,
-               "interest": 10000,
-               "from": "2023-07-01",
-               "message": "This is announcement"
-           }
-        ]
-    }
+    sql = SqlConnector()
+    collection = sql.get_collection_by_id(id)
+    if collection:
+        return collection,200
+    else:
+        return "Not found", 404
 
 
 @collection.route("/<id>/report")
@@ -35,23 +27,26 @@ def collection_report(id):
 @collection.route("/<collection_id>/nfts/<nft_id>")
 def nft_detail(collection_id, nft_id):
     wallet_address = request.args.get('walletAddress')
-    return {
-        "currentOwner": wallet_address,
-        "holdDaysInCurrentMonth": 3,
-        "collectionId": collection_id,
-        "token_id": nft_id,
-        "earnings": [
-            {
-                "datetime": "2022-07-01",
-                "principal": 10000,
-                "interestEarned": 0.1,
-                "interestRate": 0.1
-            },
-            {
-                "datetime": "2022-08-01",
-                "principal": 10000,
-                "interestEarned": 0.1,
-                "interestRate": 0.1
-            }
-        ]
-    }
+    snapshot_date = request.args.get('snapshotDate')
+    if(not snapshot_date):
+        snapshot_date= datetime.date.today()
+
+    sql = SqlConnector()
+    nft_prev_months = sql.get_nft_detail_prev_month(
+        collection_id, nft_id, wallet_address, snapshot_date)
+    if nft_prev_months is None:
+        return "Not found", 404
+
+    sql = SqlConnector()
+    nft_current = sql.get_nft_detail_current_month(
+        collection_id, nft_id, wallet_address)
+    if nft_current is None:
+        return "Not found", 404
+
+    nft_prev_months["holdDaysInCurrentMonth"] = nft_current["hold_days_in_month"]
+    nft_prev_months["earnings"].append({
+        "datetime": str(nft_current["snapshot_date"]),
+        "collectionId": nft_current["collection_id"],
+        "interestEarned": nft_current["interest_earned_in_month"],
+    })
+    return nft_prev_months

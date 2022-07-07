@@ -7,6 +7,7 @@ const Header = () => {
     const { connectedWallet, setConnectedWallet, collection } = useContext(GlobalContext)
     const [endDate, setEndDate] = useState()
     useEffect(() => {
+        console.log(collection)
         if (!collection?.endDate)
             return;
         setEndDate(collection?.endDate)

@@ -18,7 +18,7 @@ export async function getCollectionReport(collectionId) {
 }
 
 export async function getNftDetail(collectionId, tokenId, walletAddress) {
-  return instance.get(`/collections/${collectionId}/nfts/${tokenId}?walletAddress=${walletAddress}`);
+  return instance.get(`/collections/${collectionId}/nfts/${tokenId}?walletAddress=${walletAddress}&snapshotDate=2022-07-10`);
 }
 
 export async function getWallet(walletAddress) {
