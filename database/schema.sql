@@ -62,7 +62,9 @@ CREATE TABLE IF NOT EXISTS HolderByDate(
     `TokenId` INT NOT NULL,
     `CollectionId` INT NOT NULL,
     `HoldDays` INT NOT NULL,
+    `HoldDaysInMonth` INT NOT NULL,
     `InterestEarned` DECIMAL NOT NULL,
+    `InterestEarnedInMonth` DECIMAL NOT NULL,
     `SnapshotDate` DATE NOT NULL,
     `UpdateAppliedId` INT NOT NULL,
     

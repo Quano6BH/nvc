@@ -13,11 +13,11 @@ class SqlConnector:
 
     def __init__(self):
         SERVER = {
-            "host":"34.87.174.70",
-            "port":3306,
-            "username":"root",
-            "password":"Nvc123!@#",
-            "database":"NVC",
+            "host": "34.87.174.70",
+            "port": 3306,
+            "username": "root",
+            "password": "Nvc123!@#",
+            "database": "NVC",
         }
         self.sql = MySQLdb.connect(
             host=SERVER["host"],
@@ -31,6 +31,11 @@ class SqlConnector:
     def get_server_creds(self):
         with open("sql_creds.json", "r") as f:
             return json.loads(f.read())
+
+    def execute_script(self, script):
+        self.cursor.execute(script)
+        self.sql.commit()
+        self.sql.close()
 
     def fetch_table(self, table_name):
         self.cursor.execute(f"SELECT * FROM {table_name};")
@@ -112,20 +117,40 @@ class SqlConnector:
     def fetch_closest_update(self, today, collection_id):
         self.cursor.execute(
             "SELECT FromDate,Principal,Interest,Id FROM NVC.CollectionUpdate "
-            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{today}') ) >= 0 AND CollectionId = {collection_id} "
+            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{today}') ) >= 0 AND CollectionId = {collection_id} AND Type = 'Update'"
             + "ORDER BY FromDate DESC LIMIT 1 ;"
         )
         result = self.cursor.fetchall()
         self.sql.close()
         return (result[0][0], result[0][1], result[0][2], result[0][3])
 
-    # def fetch_collection_update(self, data_to_fetch, collection_id):
-    #     self.cursor.execute(
-    #         f"SELECT {data_to_fetch},Id FROM NVC.CollectionUpdate WHERE CollectionId = {str(collection_id)} ORDER BY Id DESC LIMIT 1"
-    #     )
-    #     result = self.cursor.fetchone()
-    #     self.sql.close()
-    #     return result
-
-    # def fetch_holder_by_date(self, collection_id, snapshot_date):
-    #     self.cu
+    def fetch_report(self, snapshot_date, collection_id):
+        self.cursor.execute(
+            f"SELECT Holder, TokenId, HoldDays, HoldDaysInMonth, InterestEarned, InterestEarnedInMonth, SnapshotDate FROM NVC.HolderByDate WHERE SnapshotDate = '{snapshot_date}' AND CollectionId = {collection_id};"
+        )
+        result = self.cursor.fetchall()
+        self.sql.close()
+        data = {}
+        for row in result:
+            interest = float(row[4])
+            interest_in_month = float(row[5])
+            try:
+                data[row[0]]["token_ids"][f"{row[1]}"] = {
+                    "holding_day": row[2],
+                    "holding_day_in_month": row[3],
+                    "interest": interest,
+                    "interest_in_month": interest_in_month,
+                }
+            except:
+                data[row[0]] = {
+                    "token_ids": {
+                        f"{row[1]}": {
+                            "holding_day": row[2],
+                            "holding_day_in_month": row[3],
+                            "interest": interest,
+                            "interest_in_month": interest_in_month,
+                        }
+                    }
+                }
+                continue
+        return data
