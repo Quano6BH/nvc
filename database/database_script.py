@@ -28,7 +28,7 @@ def insert_nft_holder(token_holders, collection_id, principal, interest, snapsho
 
 
 def insert_holder_by_date(report, collection_id, snapshot_day, update_applied_id):
-    script = "INSERT INTO NVC.HolderByDate (Holder, TokenId, CollectionId, HoldDays, HoldDaysInMonth, InterestEarned, InterestEarnedInMonth, SnapshotDate, UpdateAppliedId) VALUES"
+    script = "INSERT INTO NVC.HolderByDate (Holder, TokenId, CollectionId, HoldDays, HoldDaysInMonth, InterestEarned, InterestEarnedInMonth, SnapshotDate, UpdateAppliedId, Holding) VALUES"
     for holder in report.keys():
         for token_id in report[holder]["token_ids"].keys():
             hold_days = report[holder]["token_ids"][token_id]["holding_day"]
@@ -39,7 +39,8 @@ def insert_holder_by_date(report, collection_id, snapshot_day, update_applied_id
             interest_earned_in_month = report[holder]["token_ids"][token_id][
                 "interest_in_month"
             ]
-            script += f"('{holder}',{token_id}, {collection_id},{hold_days}, {hold_days_in_month},{interest_earned}, {interest_earned_in_month},'{snapshot_day}',{update_applied_id}),\n"
+            holding = 1 if report[holder]["token_ids"][token_id]["holding"] else 0
+            script += f"('{holder}',{token_id}, {collection_id},{hold_days}, {hold_days_in_month},{interest_earned}, {interest_earned_in_month},'{snapshot_day}',{update_applied_id}, {holding}),\n"
     script = script[: len(script) - 2] + ";"
     return script
 
@@ -73,10 +74,17 @@ def generate_report(
 ):
 
     data = existing_data.copy() if existing_data else {}
+
+    for wallet in data:
+        for token_id in data[wallet]["token_ids"]:
+            data[wallet]["token_ids"][token_id]["holding"] = False
+
     for token_holder in adding_token_holders:
         token_id = token_holder["token_id"]
         holder = token_holder["wallet"]
         increment_holding_day = 1
+
+        # chua co holder
         if not holder in data.keys():
             data[holder] = {
                 "token_ids": {
@@ -85,9 +93,12 @@ def generate_report(
                         "holding_day_in_month": increment_holding_day,
                         "interest": interest,
                         "interest_in_month": interest,
+                        "holding": True,
                     }
                 }
             }
+
+        # co holder
         else:
             if not existing_data:
                 data[holder]["token_ids"][token_id] = {
@@ -95,9 +106,11 @@ def generate_report(
                     "holding_day_in_month": increment_holding_day,
                     "interest": interest,
                     "interest_in_month": interest,
+                    "holding": True,
                 }
 
             else:
+                # co token
                 if token_id in data[holder]["token_ids"]:
                     data[holder]["token_ids"][token_id]["holding_day"] += 1
                     data[holder]["token_ids"][token_id]["interest"] += interest
@@ -108,6 +121,7 @@ def generate_report(
                         data[holder]["token_ids"][token_id][
                             "interest_in_month"
                         ] = interest
+
                     else:
                         data[holder]["token_ids"][token_id][
                             "holding_day_in_month"
@@ -115,12 +129,16 @@ def generate_report(
                         data[holder]["token_ids"][token_id][
                             "interest_in_month"
                         ] += interest
+
+                    data[holder]["token_ids"][token_id]["holding"] = True
+                # chua co token
                 else:
                     data[holder]["token_ids"][token_id] = {
                         "holding_day": increment_holding_day,
                         "interest": interest,
                         "interest_in_month": interest,
                         "holding_day_in_month": increment_holding_day,
+                        "holding": True,
                     }
 
     return data

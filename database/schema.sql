@@ -15,10 +15,12 @@ CREATE TABLE IF NOT EXISTS `CollectionUpdate` (
     `Id` INT NOT NULL AUTO_INCREMENT,
     `CollectionId` INT NOT NULL,
     
-    `Principal` int NOT NULL,
-    `Interest` float NOT NULL,
+    `Principal` int NULL,
+    `Interest` float NULL,
     
     `FromDate` DATE NOT NULL,
+    `Type` varchar(32) NOT NULL,
+    `Message` nvarchar(256) NULL,
     
     PRIMARY KEY (`Id`),
     FOREIGN KEY (CollectionId) REFERENCES Collection(Id)
@@ -35,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `Nft` (
 
 CREATE TABLE IF NOT EXISTS `Wallet` (
     `Address` varchar(128) NOT NULL,
+    `Kyc` BIT NOT NULL DEFAULT 0,
     
     PRIMARY KEY (`Address`)
 );
@@ -63,10 +66,11 @@ CREATE TABLE IF NOT EXISTS HolderByDate(
     `CollectionId` INT NOT NULL,
     `HoldDays` INT NOT NULL,
     `HoldDaysInMonth` INT NOT NULL,
-    `InterestEarned` DECIMAL NOT NULL,
-    `InterestEarnedInMonth` DECIMAL NOT NULL,
+    `InterestEarned` FLOAT NOT NULL,
+    `InterestEarnedInMonth` FLOAT NOT NULL,
     `SnapshotDate` DATE NOT NULL,
     `UpdateAppliedId` INT NOT NULL,
+    `Holding` BIT NOT NULL DEFAULT 0,
     
     PRIMARY KEY (`Id`),
     FOREIGN KEY (TokenId,CollectionId) REFERENCES Nft(TokenId,CollectionId),
@@ -78,10 +82,11 @@ CREATE TABLE IF NOT EXISTS HolderByMonth(
     `Id` INT NOT NULL AUTO_INCREMENT,
     `Holder` varchar(128) NOT NULL,
     `CollectionId` INT NOT NULL,
-    `ResetDate` DATETIME NOT NULL,
+    `ResetDate` DATE NOT NULL,
     `TotalNFTs` INT NOT NULL,
-    `InterestEarned` DECIMAL NOT NULL,
+    `InterestEarned` FLOAT NOT NULL,
     `UpdateAppliedId` INT NOT NULL,
+    `Paid` BIT NOT NULL DEFAULT 0,
     
     PRIMARY KEY (`Id`),
     FOREIGN KEY (CollectionId) REFERENCES Collection(Id),

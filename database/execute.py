@@ -7,9 +7,12 @@ import json
 # Chạy update database mỗi ngày
 
 # Ngày chạy update database
-day = "2022-07-10"  # có thể dùng datetime.date.today() format theo dạng %Y-%m-%d
-last_day = "2022-07-09"  # Ngày trước ngày chạy update database, dùng để fetch report và cập nhật số ngày holding + interest
-
+day = datetime.datetime(2022, 7, 10)
+# có thể dùng datetime.date.today() format theo dạng %Y-%m-%d
+last_day = day - datetime.timedelta(days=1)
+# Ngày trước ngày chạy update database, dùng để fetch report và cập nhật số ngày holding + interest
+day = day.strftime("%Y-%m-%d")
+last_day = last_day.strftime("%Y-%m-%d")
 collection_id = 1  # Mặc định collection_id là 1 vì hiện tại mới làm 1 collection
 
 # Extract token_holders để sử dụng cho các function sau:
@@ -35,13 +38,13 @@ sql.execute_script(
 
 # Fetch Report ngày trước đó (ngày hôm qua)
 sql = SqlConnector()
-report_day_1 = sql.fetch_report(last_day, collection_id)
+report_last_day = sql.fetch_report(last_day, collection_id)
 
 # Generate Report mới nhất
 # Launch day chỉ cần token_holder, existing_data = None, begin_month = True
 # Các ngày tiếp theo existing_data = report ngày cũ, begin_month = False (begin_month = True tại ResetDate)
 report = db.generate_report(
-    token_holders, principal * interest / 100, report_day_1, False
+    token_holders, principal * interest / 100, report_last_day, False
 )
 
 # Execute script INSERT INTO NVC.HolderByDate
