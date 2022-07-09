@@ -58,8 +58,8 @@ def insert_holder_by_month(report, collection_id, reset_date, update_applied_id)
     return script
 
 
-def extract_token_holders(file_name):
-    with open(f"snapshot/{file_name}", "r") as file:
+def extract_token_holders(month, day, collection_id):
+    with open(f"snapshot/month-{month}/{collection_id}_{day}.txt", "r") as file:
         lines = file.readlines()
     token_holders = []
     for line in lines:
