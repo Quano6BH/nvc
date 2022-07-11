@@ -14,26 +14,28 @@
   top: 0;
   left: 0;
 }
-
+* {
+  color: #f7ccac;
+}
 .App-logo {
   height: 10vmin;
   pointer-events: none;
 }
 
 header {
-  min-height: 20vh;
+  min-height: 10vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 1vmin);
   color: white;
-  background: #0b1418;
+  background: #3a3845;
 }
 
 main {
-  background-color: #061217;
-  min-height: 70vh;
+  background-color: #826f66;
+  min-height: 80vh;
   display: flex;
   align-content: center;
   justify-content: flex-start;
@@ -41,10 +43,12 @@ main {
   flex-direction: column;
   flex-wrap: nowrap;
 }
+
 main p {
-  color: white;
+  /* color: white; */
   font-size: x-small;
 }
+
 main .nfts {
   margin-top: 10px;
   color: white;
@@ -53,12 +57,17 @@ main .nfts {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
+  align-content: flex-start;
+  justify-content: space-between;
+  align-items: flex-start;
+  overflow-y: scroll;
+  height: 50vh;
 }
 main .nfts img {
   height: 10vh;
 }
 .nft-item {
-  padding: 2px;
+  padding: 5px;
   display: flex;
   flex-direction: column;
   align-content: center;
@@ -69,17 +78,43 @@ main .nfts img {
 footer {
   min-height: 10vh;
 
-  background: #0b1418;
+  background: #3a3845;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
 }
 
 button {
   cursor: pointer;
+  background-color: #c69b7b;
+  color: #3a3845;
 }
-input[type="number"]{
+input[type="number"] {
   width: 60px;
+  background-color: #c69b7b;
+  color: #3a3845;
 }
-input[type="checkbox"]{
+input[type="checkbox"] {
   position: absolute;
   right: 0;
-  top: 0; 
+  top: 0;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3845 #c69b7b;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #c69b7b;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #3a3845;
+  border-radius: 7px;
+  border: 1px none #ffffff;
 }
