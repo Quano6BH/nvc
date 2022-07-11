@@ -1,9 +1,9 @@
 from database_fetch import SqlConnector
 import database_script as db
 import datetime
-import json
 
-for i in range(1, 10):
+
+for i in range(1, 12):
     # Chạy update database mỗi ngày
 
     # Ngày chạy update database
@@ -13,10 +13,10 @@ for i in range(1, 10):
     # Ngày trước ngày chạy update database, dùng để fetch report và cập nhật số ngày holding + interest
     day = day.strftime("%Y-%m-%d")
     last_day = last_day.strftime("%Y-%m-%d")
-    collection_id = 1  # Mặc định collection_id là 1 vì hiện tại mới làm 1 collection
+    collection_id = 2  # Mặc định collection_id là 1 vì hiện tại mới làm 1 collection
 
     # Extract token_holders để sử dụng cho các function sau:
-    token_holders = db.extract_token_holders(7, day, collection_id)
+    token_holders = db.extract_token_holders(day, collection_id)
 
     wallets = [token_holder["wallet"] for token_holder in token_holders]
 
@@ -45,7 +45,7 @@ for i in range(1, 10):
     # Các ngày tiếp theo existing_data = report ngày cũ, begin_month = False (begin_month = True tại ResetDate)
     report = db.generate_report(
         token_holders,
-        principal * interest / 100,
+        principal * interest / 100 / 365,
         report_last_day,
         True if i == 1 else False,
     )

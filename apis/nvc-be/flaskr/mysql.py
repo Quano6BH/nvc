@@ -1,6 +1,5 @@
 import datetime
 import MySQLdb
-import json
 
 
 class SqlConnector:
@@ -353,7 +352,7 @@ class SqlConnector:
     def get_report_data(self, collection_id, snapshot_date=None):
         snapshot_date = snapshot_date or datetime.date.today()
         self.cursor.execute(
-            "SELECT Principal, Interest, TotalSupply "
+            "SELECT Principal, Interest, TotalSupply, FromDate "
             + "FROM NVC.CollectionUpdate cu "
             + "INNER JOIN NVC.Collection c ON cu.CollectionId = c.Id "
             + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{snapshot_date}') ) >= 0 AND CollectionId = {collection_id} AND Type = 'Update' "
@@ -361,7 +360,18 @@ class SqlConnector:
         )
         result = self.cursor.fetchall()
         self.sql.close()
-        return (result[0][0], result[0][1], result[0][2])
+        return (result[0][0], result[0][1], result[0][2], result[0][3])
+
+    def get_reset_day(self, collection_id, snapshot_date=None):
+        snapshot_date = snapshot_date or datetime.date.today()
+        self.cursor.execute(
+            "SELECT FromDate FROM NVC.CollectionUpdate "
+            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{snapshot_date}') ) <= 0 AND CollectionId = {collection_id} AND Type = 'Update' "
+            + "ORDER BY FromDate ASC LIMIT 1"
+        )
+        result = self.cursor.fetchone()
+        self.sql.close()
+        return result[0]
 
 
 # collection_id = 1

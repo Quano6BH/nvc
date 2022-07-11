@@ -1,8 +1,8 @@
 import datetime
 from turtle import left
 from flask import current_app, Blueprint, jsonify, request
-
 from flaskr.mysql import SqlConnector
+
 
 collection = Blueprint("collections", __name__, url_prefix="/collections")
 
@@ -20,13 +20,20 @@ def index(id):
 @collection.route("/<id>/report")
 def collection_report(id):
     sql = SqlConnector()
-    unique_holders = sql.get_unique_holder(id, "2022-07-10")
+    unique_holders = sql.get_unique_holder(id, "2022-07-09")
     sql = SqlConnector()
-    total_pay = sql.get_total_pay(id, "2022-7-10")
+    total_pay = sql.get_total_pay(id, "2022-07-09")
     sql = SqlConnector()
-    (principal, interest, total_supply) = sql.get_report_data(id, "2022-07-10")
-    days_left = 20
-    estimate = total_supply * principal * interest / 100 * days_left
+    (principal, interest, total_supply, from_date) = sql.get_report_data(
+        id, "2022-07-09"
+    )
+    sql = SqlConnector()
+    reset_day = sql.get_reset_day(id, "2022-07-09")
+    print(reset_day)
+    days_left = reset_day - datetime.date.today()
+    print(days_left.days - 1)
+    estimate = total_supply * principal * interest / 100 / 365 * (days_left.days - 1)
+
     return {
         "uniqueHolders": unique_holders,
         "totalPay": total_pay,
