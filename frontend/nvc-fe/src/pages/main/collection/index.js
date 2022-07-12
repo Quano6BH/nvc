@@ -13,8 +13,9 @@ const Collection = ({ collectionId }) => {
     const [selectedToken, setSelectedToken] = useState(null);
     const [nftStats, setNftStats] = useState(null);
     const [nftStatsCurrent, setNftStatsCurrent] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
     const { nftContractAddress } = configs;
-    const ipfs = "https://wicked.mypinata.cloud/ipfs/QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL"
+    const ipfs = "https://ikzttp.mypinata.cloud/ipfs/QmYDvPAXtiJg7s8JdRBSLWdgSphQdac8j1YuQNNxcGE1hg"
 
     useEffect(() => {
         loadContract(nftAbi, nftContractAddress,
@@ -28,14 +29,23 @@ const Collection = ({ collectionId }) => {
     useEffect(() => {
         if (!selectedToken)
             return;
+
+        setDetailLoading(true);
         getNftDetail(collection?.id, selectedToken, connectedWallet)
             .then((rs) => {
                 setNftStats(rs.data)
                 getNftDetailCurrent(collection?.id, selectedToken, connectedWallet)
                     .then((rs) => {
                         setNftStatsCurrent(rs.data)
+                    }).finally(() => {
+
+                        setDetailLoading(false);
                     })
+            }).catch(() => {
+
+                setDetailLoading(false);
             })
+
     }, [selectedToken, collection?.id, connectedWallet])
 
     // useEffect(() => {
@@ -112,8 +122,8 @@ const Collection = ({ collectionId }) => {
         return monthsDiff <= 0 ? 0 : monthsDiff;
     }
 
-    const getMonthYearFormat = (date) => {
-        return date.getMonth() + 1 + "/" + date.getFullYear();
+    const getDateFormat = (date) => {
+        return date.toLocaleDateString("vi-VN");
     }
 
     const generateNftStatsTable = useMemo(() => {
@@ -127,25 +137,43 @@ const Collection = ({ collectionId }) => {
             // console.log(nftStats?.earnings, id)
             const nftStat = nftStats?.earnings ? nftStats?.earnings.filter(x => x.updateAppliedId === id)[0] : null;
             // console.log(from_date)
+            const checkbox = Date.parse(from_date) - Date.now() > 0
             return <tr>
-                <td> {getMonthYearFormat(new Date(Date.parse(from_date)))}</ td>
-                <td>{principal}</td>
-                <td>{interest}</td>
-                <td>{!nftStat?.paid ? "" : "x"}</td>
+                <td> {getDateFormat(new Date(Date.parse(from_date)))}</ td>
+                <td>$ {principal} </td>
+                <td>{interest} %</td>
+                <td>{checkbox ? "" : "x"}</td>
                 <td>{buyBack ? "x" : ""}</td>
             </tr >;
         });
     }, [collection, nftStats])
     return <>
+        <div className="kyc">
+            Ví của bạn chưa được xác minh danh tính<br></br>
+            Vui lòng vào link <a href="www.google.com">NVC kyc</a> để xác minh danh tính
+        </div>
         <div className="common-info">
-
-            <h4>Tổng NFTs đang giữ: {balance}</h4>
-            <h4>Lãi và gốc ghi nhận cho tháng: {walletInfo?.totalEarnInCurrentMonth ?? 0}</h4>
-            <h4>Thời hạn của bộ NFT: {getCollectionDuration(collection)} thang</h4>
+            <table>
+                <tr>
+                    <th>Tổng NFTs đang giữ</th>
+                    <td>{balance}</td>
+                </tr>
+                <tr>
+                    <th>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}</th>
+                    <td>${walletInfo?.totalEarnInCurrentMonth ?? 0}</td>
+                </tr>
+                <tr>
+                    <th>Thời hạn của hợp đồng</th>
+                    <td>{getCollectionDuration(collection)} tháng</td>
+                </tr>
+            </table>
+            {/* <h4>Tổng NFTs đang giữ: {balance}</h4>
+            <h4>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}:  </h4>
+            <h4>Thời hạn của hợp đồng: {getCollectionDuration(collection)} tháng</h4> */}
         </div>
         <div className="nfts">
             <div>
-                <h3>Inventory</h3>
+                <h3>Kho đồ</h3>
                 <div className="inventory">
                     {
                         ownedTokenIds ? ownedTokenIds.map(tokenId =>
@@ -159,24 +187,27 @@ const Collection = ({ collectionId }) => {
                 </div>
             </div>
             <div>
-                <h3>NFT Stats</h3>
-                <div className="nft-detail">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tháng</th>
-                                <th>Gốc</th>
-                                <th>Lãi</th>
-                                <th>Checkbox</th>
-                                <th>Buy back</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {generateNftStatsTable}
-                        </tbody>
-                    </table>
+                <h3>Chi tiết</h3>
+                <div className={detailLoading ? "table-loading nft-detail" : "nft-detail"}>
+                    {selectedToken ? <>
+                        <h4>Token: #{selectedToken}</h4>
+                        <table >
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Gốc</th>
+                                    <th>Lãi/năm</th>
+                                    <th>Chốt</th>
+                                    <th>Buy back</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {generateNftStatsTable}
+                            </tbody>
+                        </table>
 
-                    <p>Số ngày hold nft của ví trong tháng: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p>
+                        <p>Số ngày hold nft của ví trong tháng: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p></> : ""}
+
                 </div>
             </div>
 

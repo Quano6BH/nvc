@@ -3,4 +3,12 @@
     padding:5vh 8vw;
     border-radius: 10px;
     margin-top: 20px;
+    font-size: 25px;
+}
+
+.admin table th{
+    text-align: left;
+}
+.admin table td{
+    text-align: right;
 }

@@ -13,11 +13,11 @@ function App() {
   // const [allowance, setAllowance] = useState(0);
   const [ownedNfts, setOwnedNfts] = useState([]);
   const [busdContract, setBusdContract] = useState();
-  const BASE_IMAGE_CID = "QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL";
   const [connectedAccount, setConnectedAccount] = useState();
   const [mintAmount, setMintAmount] = useState(1);
   // const [approveAmount, setApproveAmount] = useState(0);
   const [burningTokenIds, setBurningTokenIds] = useState(new Set());
+  const BASE_IMAGE_CID = "QmYDvPAXtiJg7s8JdRBSLWdgSphQdac8j1YuQNNxcGE1hg";
   // const START_BLOCK = 20442946;
   const { nftContractAddress, busdContractAddress } = configs;
   const changeAccount = (accounts) => {
@@ -37,6 +37,7 @@ function App() {
     })
 
   })
+
   useEffect(() => {
     const contractAddress = busdContractAddress;
     loadContract(busdAbi, contractAddress, {
@@ -65,6 +66,7 @@ function App() {
       return;
     busdContract.methods.balanceOf(connectedAccount).call().then(result => {
       setCurrentBUSD(result);
+      console.log(result, busdContract._address)
     })
   }, [busdContract, connectedAccount])
 
@@ -87,9 +89,14 @@ function App() {
   }
 
   const fetchOwnNfts = (connectedAccount) => {
-    nftContract.methods.tokensOfOwner("0x609e505827cbabf618a08c58c3a36589888f18ba").call().then(rs => {
+    if (!nftContract)
+      return;
+    nftContract.methods.tokensOfOwner(connectedAccount).call().then(rs => {
       console.log(rs)
       setOwnedNfts(rs);
+    })
+    busdContract.methods.balanceOf(connectedAccount).call().then(result => {
+      setCurrentBUSD(result);
     })
 
   }
@@ -177,7 +184,7 @@ function App() {
           ? (<>
             {/* <p>Contract: {shortenAddress(nftContract?._address)}</p> */}
             <p>Connected wallet: {shortenAddress(connectedAccount)}</p>
-            <p>Current Balance: {currentBusd}</p>
+            <p>Current Balance: {currentBusd ? window.web3.utils.fromWei(currentBusd) : 0}</p>
             <br />
             {/* {allowance <= 0
               ?
@@ -204,8 +211,8 @@ function App() {
                 {ownedNfts.map((tokenId) =>
                   <div className='nft-item' key={`own-token-${tokenId}`}>
                     {/* <input type={"checkbox"} onChange={(e) => onCheckboxChange(e, tokenId)} /> */}
-                    <span style={{ right: "0", top: "0", position: "absolute" }}>#{tokenId}</span>
-                    <img src={`https://wicked.mypinata.cloud/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} alt={tokenId} />
+                    <span style={{ left: "0", top: "0", color: "black", position: "absolute" }}>#{tokenId}</span>
+                    <img src={`https://ikzttp.mypinata.cloud/ipfs/${BASE_IMAGE_CID}/${tokenId}.png`} alt={tokenId} />
                     {/* <button onClick={(e) => onBurn(tokenId)}>Burn</button> */}
                   </div>)
                 }

@@ -18,28 +18,38 @@ def index(id):
         return "Not found", 404
 
 
+daily_data = {}
+prev_day = None
+
+
 @collection.route("/<id>/report")
 def collection_report(id):
-    sql = SqlConnector()
-    unique_holders = sql.get_unique_holder(id)
-    sql = SqlConnector()
-    total_pay = sql.get_total_pay(id)
-    sql = SqlConnector()
-    (principal, interest, total_supply, from_date) = sql.get_report_data(
-        id, "2022-07-09"
-    )
-    sql = SqlConnector()
-    reset_day = sql.get_reset_day(id)
-    print(reset_day)
-    days_left = reset_day - datetime.date.today()
-    print(days_left.days - 1)
-    estimate = total_supply * principal * interest / 100 / 365 * (days_left.days - 1)
-
-    return {
-        "uniqueHolders": unique_holders,
-        "totalPay": total_pay,
-        "estimate": estimate,
-    }
+    global prev_day
+    global daily_data
+    print(prev_day)
+    if not prev_day or prev_day != datetime.date.today():
+        sql = SqlConnector()
+        unique_holders = sql.get_unique_holder(id)
+        sql = SqlConnector()
+        total_pay = sql.get_total_pay(id)
+        sql = SqlConnector()
+        (principal, interest, total_supply, from_date) = sql.get_report_data(
+            id
+        )
+        sql = SqlConnector()
+        reset_day = sql.get_reset_day(id)
+        print(reset_day)
+        days_left = reset_day - datetime.date.today()
+        print(interest)
+        estimate = (total_supply * principal *
+                    interest / 100 / 365 * days_left.days)
+        daily_data = {
+            "uniqueHolders": unique_holders,
+            "totalPay": total_pay,
+            "estimate": estimate,
+        }
+    prev_day = datetime.date.today()
+    return daily_data
 
 
 @collection.route("/<collection_id>/nfts/<nft_id>")
@@ -62,6 +72,13 @@ def nft_detail(collection_id, nft_id):
         "collectionId": collection_id,
         "earnings": earnings
     }
+
+
+@collection.route("/<collection_id>/wallets/<wallet_address>")
+def wallet_detail(collection_id, wallet_address):
+    sql = SqlConnector()
+    data = sql.get_wallet_nfts(collection_id, wallet_address)
+    return (data, 200) if data else (data, 404)
 
 
 @collection.route("/<collection_id>/nfts/<nft_id>/current")

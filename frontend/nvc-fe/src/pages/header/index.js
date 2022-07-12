@@ -19,19 +19,44 @@ const Header = () => {
             }
         });
     }
+
+    // parse each string as a Date object and sort them in ascending order
+    function sortDates(dates) {
+        return dates.map(function (date) {
+            return new Date(date).getTime();
+        }).sort(function (a, b) {
+            return a - b;
+        });
+    }
+
+
+    // remove any dates in the past, and get the first child of the array of remaining dates
+
+
     const MemoCountdown = useMemo(() => {
-        let end = new Date(Date.parse(collection?.endDate));
+        if (!collection?.updates)
+            return <>loading</>
+        let dates = collection?.updates.map(x => new Date(Date.parse(x.from_date)));
+
+        var orderedDates = sortDates(dates);
+        console.log(orderedDates)
+        var nextDate = orderedDates.filter(function (date) {
+            console.log(Date.now(), date, Date.now() - date)
+            return (Date.now() - date) < 0;
+        })[0];
+
+        // console.log(Date.now(), new Date(nextDate))
 
         return <Countdown
-            date={end}
+            date={nextDate}
             intervalDelay={0}
             precision={3}
 
 
-            renderer={({ days, hours }) => <div>{days} days: {hours} hours</div>}
+            renderer={({ days, hours }) => <div>{days} ngày: {hours} giờ</div>}
         ></Countdown>;
     },
-        [endDate]);
+        [collection?.updates]);
 
     return <header>
         <div className='countdown'>
@@ -40,7 +65,7 @@ const Header = () => {
         </div>
 
         <div className='connect-wallet-button' onClick={onConnectWallet}>
-            {connectedWallet ? shortenAddress(connectedWallet) : 'Connect Wallet'}
+            {connectedWallet ? shortenAddress(connectedWallet) : 'Kết nối ví'}
         </div>
         {/* <button onClick={onConnectWallet}>Connect Wallet</button> */}
     </header>

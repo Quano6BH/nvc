@@ -13,11 +13,34 @@ const Admin = () => {
         })
 
     }, [collection?.id])
+
+    
     return <>
         <div class="admin">
-            <p>Unique holders: {report?.uniqueHolders}</p>
-            <p>Lãi + gốc phải trả cho toàn bộ holder:{report?.totalPay}</p>
-            <p>Estimate trong 30 ngày:{report?.estimate}</p>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Unique holders</th>
+                        <td>{report?.uniqueHolders}</td>
+                    </tr>
+                    <tr>
+                        <th>Lãi + gốc đã ghi nhận cho toàn bộ holder</th>
+                        <td>{report?.totalPay}</td>
+                    </tr>
+                    <tr>
+                        <th>Lãi + gốc chưa ghi nhận cho toàn bộ holder</th>
+                        <td>{report?.estimate}</td>
+                    </tr>
+                    <tr>
+                        <th>Giá trị từng NFT</th>
+                        <td>{collection?.updates[0].principal}</td>
+                    </tr>
+                    <tr>
+                        <th>Tổng giá trị bộ sưu tập</th>
+                        <td>{collection?.updates[0].principal * collection?.totalSupply}</td>
+                    </tr>
+                </tbody>
+            </table>
 
         </div>
     </>

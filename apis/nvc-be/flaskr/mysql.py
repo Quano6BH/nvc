@@ -263,46 +263,29 @@ class SqlConnector:
         snapshot_date = snapshot_date or datetime.date.today()
 
         query = (
-            f"SELECT TokenId, Ho FROM {self.NFT_HOLDER_BY_DATE_TABLE_NAME} "
+            f"SELECT SUM(InterestEarnedInMonth), kyc "
+            + f"FROM {self.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd "
+            + f"INNER JOIN {self.WALLET_TABLE_NAME} w ON w.Address =  hbd.Holder  "
             + f"WHERE CollectionId = {str(collection_id)} "
-            + f"AND Holder = {wallet_address} "
-            + f"AND SnapshotDate = {str(snapshot_date)};"
+            + f"AND Holder = '{wallet_address}' "
+            + f"AND SnapshotDate = '{str(snapshot_date)}';"
         )
 
+        print(query)
         self.cursor.execute(query)
 
-        result = self.cursor.fetchall()
+        result = self.cursor.fetchone()
 
         self.sql.close()
         if not result:
             return None
-
-        data = []
-        for row in result:
-            (
-                id,
-                holder,
-                query_token_id,
-                query_collection_id,
-                hold_days,
-                hold_days_in_month,
-                interest_earned,
-                interest_earned_in_month,
-                query_snapshot_date,
-            ) = row
-            data.append(
-                {
-                    "id": id,
-                    "holder": holder,
-                    "token_id": query_token_id,
-                    "collection_id": query_collection_id,
-                    "hold_days": hold_days,
-                    "hold_days_in_month": hold_days_in_month,
-                    "interest_earned": interest_earned,
-                    "interest_earned_in_month": interest_earned_in_month,
-                    "snapshot_date": query_snapshot_date,
-                }
-            )
+        print(result)
+        totalEarnInCurrentMonth, kyc = result
+        data = {
+            "totalEarnInCurrentMonth": totalEarnInCurrentMonth,
+            "kyc": kyc == b'\x01',
+            "walletAddress" : wallet_address
+        }
 
         return data
 
@@ -353,8 +336,8 @@ class SqlConnector:
             "SELECT Principal, Interest, TotalSupply, FromDate "
             + "FROM NVC.CollectionUpdate cu "
             + "INNER JOIN NVC.Collection c ON cu.CollectionId = c.Id "
-            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{snapshot_date}') ) >= 0 AND CollectionId = {collection_id} AND Type = 'Update' "
-            + "ORDER BY FromDate DESC LIMIT 1 ;"
+            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{snapshot_date}') ) < 0 AND CollectionId = {collection_id} AND Type = 'Update' "
+            + "ORDER BY FromDate ASC LIMIT 1 ;"
         )
         result = self.cursor.fetchall()
         self.sql.close()

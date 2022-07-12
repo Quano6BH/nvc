@@ -23,8 +23,8 @@ export async function getNftDetail(collectionId, tokenId, walletAddress) {
 export async function getNftDetailCurrent(collectionId, tokenId, walletAddress) {
   return instance.get(`/collections/${collectionId}/nfts/${tokenId}/current?walletAddress=${walletAddress}`);
 }
-export async function getWallet(walletAddress, collectionId = 1) {
-  return instance.get(`/wallets/${walletAddress}?collectionId=${collectionId}`);
+export async function getWallet(walletAddress, collectionId = 3) {
+  return instance.get(`collections/${collectionId}/wallets/${walletAddress}`);
 }
 
 
