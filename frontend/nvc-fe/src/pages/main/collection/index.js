@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState, useMemo } from "react"
 import { GlobalContext } from "../../../contexts/GlobalContext"
 import { loadContract } from "../../../contracts";
 import nftAbi from '../../../contracts/abis/nft.json'
 import configs from '../../../configs'
 import './collection.css'
-import { getNftDetail } from "../../../apis/nvcApi";
+import { getNftDetail, getNftDetailCurrent } from "../../../apis/nvcApi";
 const Collection = ({ collectionId }) => {
     const { connectedWallet, collection, walletInfo } = useContext(GlobalContext);
     const [nftContract, setNftContract] = useState();
@@ -12,6 +12,7 @@ const Collection = ({ collectionId }) => {
     const [balance, setBalance] = useState();
     const [selectedToken, setSelectedToken] = useState(null);
     const [nftStats, setNftStats] = useState(null);
+    const [nftStatsCurrent, setNftStatsCurrent] = useState(null);
     const { nftContractAddress } = configs;
     const ipfs = "https://wicked.mypinata.cloud/ipfs/QmSD1Gx6uoF2mGK5jSGdQDbRrWthtM1V219iwYcYyPFzcL"
 
@@ -27,9 +28,13 @@ const Collection = ({ collectionId }) => {
     useEffect(() => {
         if (!selectedToken)
             return;
-        getNftDetail(collection?.id, 8, "0xd9A98d4b857C8a8c8D76Fd8E8904a0a29B915138")
+        getNftDetail(collection?.id, selectedToken, connectedWallet)
             .then((rs) => {
                 setNftStats(rs.data)
+                getNftDetailCurrent(collection?.id, selectedToken, connectedWallet)
+                    .then((rs) => {
+                        setNftStatsCurrent(rs.data)
+                    })
             })
     }, [selectedToken, collection?.id, connectedWallet])
 
@@ -71,22 +76,23 @@ const Collection = ({ collectionId }) => {
     useEffect(() => {
         if (!nftContract || !connectedWallet)
             return;
+        console.log(nftContract)
 
-
-        // nftContract.methods.balanceOf(connectedWallet)
-        //     .call()
-        //     .then((rs) => {
-        //         setBalance(rs);
-        //     }).catch(e => console.log(e))
-        setBalance(2);
-        // nftContract.methods.tokensOfOwner(connectedWallet)
-        //     .call()
-        //     .then((rs) => {
-        //         setOwnedTokenIds(rs);
-        //     }).catch(e => console.log(e))
-        setOwnedTokenIds([1, 2]);
+        nftContract.methods.balanceOf(connectedWallet)
+            .call()
+            .then((rs) => {
+                setBalance(rs);
+            }).catch(e => console.log(e))
+        // setBalance(2);
+        nftContract.methods.tokensOfOwner(connectedWallet)
+            .call()
+            .then((rs) => {
+                setOwnedTokenIds(rs);
+            }).catch(e => console.log(e))
+        // setOwnedTokenIds([1, 2]);
 
     }, [nftContract, connectedWallet])
+
     const getCollectionDuration = ({ startDate, endDate }) => {
         if (!startDate || !endDate)
             return 0;
@@ -98,12 +104,44 @@ const Collection = ({ collectionId }) => {
             12 * (endDateParsed.getFullYear() - startDateParsed.getFullYear())
         )
     }
+
+    const getMonthsDiff = (d1, d2) => {
+        let monthsDiff = (d2.getFullYear() - d1.getFullYear()) * 12;
+        monthsDiff -= d1.getMonth();
+        monthsDiff += d2.getMonth();
+        return monthsDiff <= 0 ? 0 : monthsDiff;
+    }
+
+    const getMonthYearFormat = (date) => {
+        return date.getMonth() + 1 + "/" + date.getFullYear();
+    }
+
+    const generateNftStatsTable = useMemo(() => {
+        if (!collection?.updates) {
+            return <></>
+        }
+
+        const collectionUpdates = collection?.updates.filter(x => x.type === "Update");
+
+        return collectionUpdates.map(({ from_date, principal, interest, id, buyBack }) => {
+            // console.log(nftStats?.earnings, id)
+            const nftStat = nftStats?.earnings ? nftStats?.earnings.filter(x => x.updateAppliedId === id)[0] : null;
+            // console.log(from_date)
+            return <tr>
+                <td> {getMonthYearFormat(new Date(Date.parse(from_date)))}</ td>
+                <td>{principal}</td>
+                <td>{interest}</td>
+                <td>{!nftStat?.paid ? "" : "x"}</td>
+                <td>{buyBack ? "x" : ""}</td>
+            </tr >;
+        });
+    }, [collection, nftStats])
     return <>
         <div className="common-info">
 
-            <h4>Tong NFT dang hold: {balance}</h4>
-            <h4>Lai va goc ghi nhan cho thang: {walletInfo?.totalEarnInCurrentMonth}</h4>
-            <h4>Thoi han cua bo NFT: {getCollectionDuration(collection)}</h4>
+            <h4>Tổng NFTs đang giữ: {balance}</h4>
+            <h4>Lãi và gốc ghi nhận cho tháng: {walletInfo?.totalEarnInCurrentMonth ?? 0}</h4>
+            <h4>Thời hạn của bộ NFT: {getCollectionDuration(collection)} thang</h4>
         </div>
         <div className="nfts">
             <div>
@@ -134,20 +172,11 @@ const Collection = ({ collectionId }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {nftStats?.earnings
-                                ? nftStats?.earnings.map(({ datetime, principal, interestEarned }) =>
-                                    <tr>
-                                        <td>{datetime}</td>
-                                        <td>{principal}</td>
-                                        <td>{interestEarned}</td>
-                                        <td>checked</td>
-                                        <td></td>
-                                    </tr>)
-                                : <></>}
+                            {generateNftStatsTable}
                         </tbody>
                     </table>
 
-                    <p>Số ngày hold nft của ví trong tháng: {nftStats?.holdDaysInCurrentMonth}</p>
+                    <p>Số ngày hold nft của ví trong tháng: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p>
                 </div>
             </div>
 

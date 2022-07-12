@@ -1,10 +1,11 @@
 import datetime
 from turtle import left
-from flask import current_app, Blueprint, jsonify, request
+from flask import Blueprint,  request
+import json
+
 from flaskr.mysql import SqlConnector
 
-
-collection = Blueprint("collections", __name__, url_prefix="/collections")
+collection = Blueprint("collections", __name__, url_prefix="/api/collections")
 
 
 @collection.route("/<id>")
@@ -20,15 +21,15 @@ def index(id):
 @collection.route("/<id>/report")
 def collection_report(id):
     sql = SqlConnector()
-    unique_holders = sql.get_unique_holder(id, "2022-07-09")
+    unique_holders = sql.get_unique_holder(id)
     sql = SqlConnector()
-    total_pay = sql.get_total_pay(id, "2022-07-09")
+    total_pay = sql.get_total_pay(id)
     sql = SqlConnector()
     (principal, interest, total_supply, from_date) = sql.get_report_data(
         id, "2022-07-09"
     )
     sql = SqlConnector()
-    reset_day = sql.get_reset_day(id, "2022-07-09")
+    reset_day = sql.get_reset_day(id)
     print(reset_day)
     days_left = reset_day - datetime.date.today()
     print(days_left.days - 1)
@@ -43,31 +44,38 @@ def collection_report(id):
 
 @collection.route("/<collection_id>/nfts/<nft_id>")
 def nft_detail(collection_id, nft_id):
-    wallet_address = request.args.get("walletAddress")
-    snapshot_date = request.args.get("snapshotDate")
-    if not snapshot_date:
+    wallet_address = request.args.get('walletAddress')
+    snapshot_date = request.args.get('snapshotDate')
+    if(not snapshot_date):
+        snapshot_date = datetime.date.today()
+    print(f"snapshot_dateasdasd {str(snapshot_date)}")
+    sql = SqlConnector()
+    earnings = sql.get_nft_history(
+        collection_id, nft_id, wallet_address, snapshot_date)
+    print(json.dumps(earnings))
+    # if earnings is None:
+    #     return "Not found", 404
+
+    return {
+        "wallet": wallet_address,
+        "tokenId": nft_id,
+        "collectionId": collection_id,
+        "earnings": earnings
+    }
+
+
+@collection.route("/<collection_id>/nfts/<nft_id>/current")
+def nft_detail_cur(collection_id, nft_id):
+    wallet_address = request.args.get('walletAddress')
+    snapshot_date = request.args.get('snapshotDate')
+    if(not snapshot_date):
         snapshot_date = datetime.date.today()
 
     sql = SqlConnector()
-    nft_prev_months = sql.get_nft_detail_prev_month(
-        collection_id, nft_id, wallet_address, snapshot_date
-    )
-    if nft_prev_months is None:
-        return "Not found", 404
-
-    sql = SqlConnector()
-    nft_current = sql.get_nft_detail_current_month(
-        collection_id, nft_id, wallet_address
-    )
-    if nft_current is None:
-        return "Not found", 404
-
-    nft_prev_months["holdDaysInCurrentMonth"] = nft_current["hold_days_in_month"]
-    nft_prev_months["earnings"].append(
-        {
-            "datetime": str(nft_current["snapshot_date"]),
-            "collectionId": nft_current["collection_id"],
-            "interestEarned": nft_current["interest_earned_in_month"],
-        }
-    )
-    return nft_prev_months
+    data = sql.get_nft_current(
+        collection_id, nft_id, wallet_address, snapshot_date)
+    # if earnings is None:
+    #     return "Not found", 404
+    if(not data):
+        return "", 404
+    return data

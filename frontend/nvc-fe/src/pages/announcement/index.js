@@ -5,8 +5,8 @@ const Announcement = () => {
     const { collection } = useContext(GlobalContext)
 
     return <>
-        {collection?.updates 
-        ? collection?.updates.map(({ message }) => <section>
+        {collection?.updates
+        ? collection?.updates?.filter(x=>x.type==="Annoucement").map(({ message }) => <section>
             {message}
         </section>) : <></>}
 

@@ -1,8 +1,8 @@
-.welcome{
+.welcome {
     height: 80%;
-    
-    background-color: antiquewhite;
 
+    background-color: #F7CCAC;
+    color: #3A3845;
     border-radius: 5px;
     padding: 1.5vh 8vh;
 }

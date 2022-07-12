@@ -9,7 +9,7 @@ const isMetaMaskInstalled = () => {
     return Boolean(ethereum && ethereum.isMetaMask);
 };
 
-const loadContract = async (contractAbi, contractAddress, { onContractInit }) => { 
+const loadContract = async (contractAbi, contractAddress, { onContractInit }) => {
     window.web3 = new Web3(window.web3.currentProvider);
     const web3 = window.web3;
     const contract = new web3.eth.Contract(contractAbi, contractAddress);
@@ -19,7 +19,7 @@ const loadContract = async (contractAbi, contractAddress, { onContractInit }) =>
     return contract;
 }
 
-const loadWeb3 = async ({onAccountChanged}) => {
+const loadWeb3 = async ({ onAccountChanged }) => {
     try {
         if (!isMetaMaskInstalled) return alert('Please install Metamask');
         const { ethereum } = window;
@@ -69,7 +69,13 @@ const connectWallet = async ({ onAccountConnected }) => {
     }
 }
 
+const signMessage = async (message, account) => {
+    const signMessage = window.web3.utils.sha3(message)
+
+    return window.web3.eth.personal.sign(message, account);
+};
+
 
 const shortenAddress = (address) => address.substring(0, 5) + "....." + address.substring(address.length - 4, address.length);
 
-export { connectWallet, loadWeb3, loadContract, shortenAddress, requestApprovalForTokenAsync }
+export { connectWallet, loadWeb3, loadContract, shortenAddress, requestApprovalForTokenAsync, signMessage }

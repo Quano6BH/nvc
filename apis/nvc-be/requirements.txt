@@ -1,3 +1,5 @@
 mysqlclient
 flask
 flask-cors
+web3
+pyjwt

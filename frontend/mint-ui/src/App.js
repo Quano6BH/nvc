@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import nftAbi from './contracts/abis/nft.json'
 import busdAbi from './contracts/abis/erc20.json'
 import configs from './configs';
+// const busdAbi=[]
 function App() {
   const [nftContract, setNftContract] = useState();
   const [currentBusd, setCurrentBUSD] = useState(null);

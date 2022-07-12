@@ -6,6 +6,8 @@ const Admin = () => {
     const [report, setReport] = useState();
     const { collection } = useContext(GlobalContext);
     useEffect(() => {
+        if (!collection?.id)
+            return;
         getCollectionReport(collection?.id).then(rs => {
             setReport(rs.data)
         })

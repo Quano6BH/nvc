@@ -30,7 +30,7 @@ class SqlConnector:
 
     def get_collection_by_id(self, collection_id):  # Get Collection
         query = (
-            f"SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address, NetworkId, Principal, Interest, FromDate, Type, Message "
+            f"SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address, NetworkId, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id "
             + f"FROM {self.COLLECTION_TABLE_NAME} c "
             + f"INNER JOIN {self.COLLECTION_UPDATE_TABLE_NAME} cu ON  c.Id = cu.CollectionId "
             + f"WHERE c.Id = {str(collection_id)};"
@@ -73,7 +73,23 @@ class SqlConnector:
             _,
             _,
             _,
+            buy_back_o,
+            _
         ) = result[0]
+
+        # print([
+        #     {
+        #         # "principal": principal,
+        #         # "interest": interest,
+        #         "from_date": str(from_date),
+        #         # "type": type,
+        #         # "message": message,
+        #         "buy_back": str(buy_back)[-2] == "1",
+        #         "buy_backass": buy_back,
+        #         "cu_id":cu_id
+        #     }
+        #     for _, _, _, _, _, _, _, principal, interest, from_date, type, message, buy_back, cu_id in result
+        # ])
         return {
             "id": id,
             "startDate": str(start_date),
@@ -89,26 +105,27 @@ class SqlConnector:
                     "from_date": str(from_date),
                     "type": type,
                     "message": message,
+                    "buyBack": str(buy_back)[-2] == "1",
+                    "id": cu_id
                 }
-                for _, _, _, _, _, _, _, principal, interest, from_date, type, message in result
+                for _, _, _, _, _, _, _, principal, interest, from_date, type, message, buy_back, cu_id in result
             ],
         }
 
-    def get_nft_detail_prev_month(
-        self, collection_id, token_id, wallet_address, snapshot_date=None
-    ):  # Detail NFT
+    def get_nft_history(self, collection_id, token_id, wallet_address, snapshot_date=None):  # Detail NFT
         snapshot_date = snapshot_date or datetime.date.today()
 
-        query = (
-            f"SELECT hbm.Holder, hbm.CollectionId, ResetDate, TotalNFTs, hbm.InterestEarned as InterestEarned_hbm, TokenId, HoldDays, HoldDaysInMonth, hbd.InterestEarned as InterestEarned_hbd, InterestEarnedInMonth, SnapshotDate "
-            + f"FROM {self.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm "
-            + f"INNER JOIN {self.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd "
-            + f"ON hbm.CollectionId = hbd.CollectionId AND hbm.Holder = hbd.Holder AND hbm.ResetDate = hbd.SnapshotDate "
-            + f"WHERE hbm.CollectionId = {str(collection_id)} "
-            + f"AND hbm.Holder = '{wallet_address}' "
-            + f"AND hbd.TokenId = '{str(token_id)}' "
-            + f"AND ResetDate <= '{str(snapshot_date)}';"
-        )
+        query = f"SELECT hbm.Holder, hbm.CollectionId, hbd.TokenId, SnapshotDate, "\
+            + f"         cu.Interest, cu.Principal, hbm.Paid, hbm.UpdateAppliedId "\
+            + f"FROM {self.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm "\
+            + f"INNER JOIN {self.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd "\
+            + f"ON hbm.CollectionId = hbd.CollectionId AND hbm.Holder = hbd.Holder AND hbm.ResetDate = hbd.SnapshotDate "\
+            + f"INNER JOIN {self.COLLECTION_UPDATE_TABLE_NAME} cu "\
+            + f"ON cu.Id = hbm.UpdateAppliedId  "\
+            + f"WHERE hbm.CollectionId = {str(collection_id)} "\
+            + f"AND hbm.Holder = '{wallet_address}' "\
+            + f"AND hbd.TokenId = '{str(token_id)}';"
+
         print(query)
         self.cursor.execute(query)
 
@@ -116,81 +133,67 @@ class SqlConnector:
 
         self.sql.close()
 
+        print(result)
         if not result:
             return None
+        earnings = []
 
-        (
-            hbm_holder,
-            hbm_collection_id,
-            hbm_reset_date,
-            hbm_total_nfts,
-            hbm_interest_earned,
-            row_token_id,
-            _,
-            _,
-            _,
-            _,
-            _,
-        ) = result[0]
-        data = {
-            "currentOwner": hbm_holder,
-            "holdDaysInCurrentMonth": 0,
-            "tokenId": row_token_id,
-            "collectionId": hbm_collection_id,
-            "earnings": [],
-        }
         for row in result:
-            (
-                hbm_holder,
-                hbm_collection_id,
-                hbm_reset_date,
-                hbm_total_nfts,
-                hbm_interest_earned,
-                _,
-                _,
-                _,
-                _,
-                _,
-                _,
-            ) = row
-            (
-                _,
-                _,
-                _,
-                _,
-                _,
-                row_token_id,
-                hold_days,
-                hold_days_in_month,
-                hbd_interest_earned,
-                hbd_interest_earned_in_month,
-                row_snapshot_date,
-            ) = row
-            data["earnings"].append(
-                {
-                    "datetime": str(row_snapshot_date),
-                    "collection_id": hbm_collection_id,
-                    "interestEarned": hbd_interest_earned,
-                }
-            )
+            _, _,  _, row_snapshot_date, interest, principal, paid, updateAppliedId = row
+            earnings.append({
+                "datetime": str(row_snapshot_date),
+                "paid": paid == b'\x01',
+                "interestRate": interest,
+                "principal": principal,
+                "updateAppliedId": updateAppliedId
+            })
 
-        return data
+        return earnings
 
-    # Detail NFT
-    def get_nft_detail_current_month(
-        self, collection_id, token_id, wallet_address, snapshot_date=None
-    ):
+    def get_nft_current(self, collection_id, token_id, wallet_address, snapshot_date=None):  # Detail NFT
         snapshot_date = snapshot_date or datetime.date.today()
 
-        query = (
-            f"SELECT Id, Holder, TokenId, CollectionId, HoldDays, HoldDaysInMonth, InterestEarned, InterestEarnedInMonth, SnapshotDate "
-            + f"FROM {self.NFT_HOLDER_BY_DATE_TABLE_NAME} "
-            + f"WHERE CollectionId = {str(collection_id)} "
-            + f"AND TokenId = {str(token_id)} "
-            + f"AND Holder = '{wallet_address}' "
-            + f"AND SnapshotDate = '{str(snapshot_date)}';"
-        )
+        query = f"SELECT hbd.Holder, hbd.CollectionId, hbd.TokenId, SnapshotDate, "\
+            + f"         cu.Interest, cu.Principal, hbd.UpdateAppliedId, hbd.HoldDaysinMonth "\
+            + f"FROM {self.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd "\
+            + f"INNER JOIN {self.COLLECTION_UPDATE_TABLE_NAME} cu "\
+            + f"ON cu.Id = hbd.UpdateAppliedId  "\
+            + f"WHERE hbd.CollectionId = {str(collection_id)} "\
+            + f"AND hbd.Holder = '{wallet_address}' "\
+            + f"AND hbd.SnapshotDate = '{str(snapshot_date)}' "\
+            + f"AND hbd.TokenId = '{str(token_id)}';"
 
+        print(query)
+        self.cursor.execute(query)
+
+        result = self.cursor.fetchone()
+
+        self.sql.close()
+
+        print(result)
+        if not result:
+            return None
+        holder, data_collection_id,  data_token_id, data_snapshot_date, interest, principal, updateAppliedId, hold_days = result
+
+        return {
+            "datetime": str(data_snapshot_date),
+            "paid": False,
+            "interestRate": interest,
+            "principal": principal,
+            "updateAppliedId": updateAppliedId,
+            "holdDaysInCurrentMonth": hold_days
+        }
+
+    # Detail NFT
+    def get_nfts_summary_by_wallet(self, collection_id, wallet_address, snapshot_date=None):
+        snapshot_date = snapshot_date or datetime.date.today()
+
+        query = f"SELECT Holder, SUM(InterestEarnedInMonth), COUNT(TokenId)"\
+            + f"FROM {self.NFT_HOLDER_BY_DATE_TABLE_NAME} "\
+            + f"WHERE CollectionId = {str(collection_id)} "\
+            + f"AND Holder = '{wallet_address}' "\
+            + f"AND SnapshotDate = '{str(snapshot_date)}';"
+        print(query)
         self.cursor.execute(query)
 
         result = self.cursor.fetchone()
@@ -200,27 +203,11 @@ class SqlConnector:
         if not result:
             return None
 
-        (
-            id,
-            holder,
-            query_token_id,
-            query_collection_id,
-            hold_days,
-            hold_days_in_month,
-            interest_earned,
-            interest_earned_in_month,
-            query_snapshot_date,
-        ) = result
+        holder, sum_InterestEarnedInMonth, count_TokenId = result
         return {
-            "id": id,
-            "holder": holder,
-            "token_id": query_token_id,
-            "collection_id": query_collection_id,
-            "hold_days": hold_days,
-            "hold_days_in_month": hold_days_in_month,
-            "interest_earned": interest_earned,
-            "interest_earned_in_month": interest_earned_in_month,
-            "snapshot_date": query_snapshot_date,
+            "walletAddress": holder,
+            "totalEarnInCurrentMonth": sum_InterestEarnedInMonth,
+            "totalNftsInCurrentMonth": count_TokenId,
         }
 
     def get_collection_stats(
@@ -344,6 +331,17 @@ class SqlConnector:
         self.cursor.execute(
             "SELECT sum(InterestEarned) FROM NVC.HolderByDate "
             + f"WHERE SnapshotDate = '{snapshot_date}' AND CollectionId = {collection_id};"
+        )
+        result = self.cursor.fetchone()
+        self.sql.close()
+        return result[0]
+
+    def get_reset_day(self, collection_id, snapshot_date=None):
+        snapshot_date = snapshot_date or datetime.date.today()
+        self.cursor.execute(
+            "SELECT FromDate FROM NVC.CollectionUpdate "
+            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{snapshot_date}') ) <= 0 AND CollectionId = {collection_id} AND Type = 'Update' "
+            + "ORDER BY FromDate ASC LIMIT 1"
         )
         result = self.cursor.fetchone()
         self.sql.close()

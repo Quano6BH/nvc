@@ -5,23 +5,27 @@ header {
     align-items: center;
     justify-content: flex-end;
     flex-direction: row;
+    background-color: #3A3845;
 }
 
-.connect-wallet-button{
+.connect-wallet-button {
     cursor: pointer;
     padding: 1vh 2vh;
-    background-color: antiquewhite;
+    background-color: #C69B7B;
+    color: #3A3845;
     border-radius: 5px;
     margin-right: 20px;
 }
 
-.connect-wallet-button:hover{
-    
+.connect-wallet-button:hover {
+
     background-color: rgb(245, 228, 205);
 }
+
 .countdown {
     margin: auto;
-    background-color: antiquewhite;
+    background-color: #C69B7B;
+    color: #3A3845;
     border-radius: 5px;
     padding: 1vh 8vh;
 }

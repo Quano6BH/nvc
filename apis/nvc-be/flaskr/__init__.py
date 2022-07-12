@@ -3,6 +3,8 @@ import os
 from flask import Flask
 
 from flask_cors import CORS
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -24,11 +26,15 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    from flaskr.blueprints.authenticate import authenticate
+    app.register_blueprint(authenticate)
+
     from flaskr.blueprints.collection import collection
     app.register_blueprint(collection)
-    
+
     from flaskr.blueprints.wallet import wallet
     app.register_blueprint(wallet)
 
-    CORS(app)
+    CORS(app, allow_headers=["Content-Type", "Authorization",
+         "Access-Control-Allow-Credentials"], origins="*")
     return app

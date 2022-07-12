@@ -27,7 +27,8 @@ const Header = () => {
             intervalDelay={0}
             precision={3}
 
-        // renderer={props => <div>{props.total}</div>}
+
+            renderer={({ days, hours }) => <div>{days} days: {hours} hours</div>}
         ></Countdown>;
     },
         [endDate]);

@@ -4,8 +4,8 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:5000',
-  timeout: 1000,
+  baseURL: 'http://localhost:5000/api',
+  // timeout: 60000,
   // headers: {'X-Custom-Header': 'foobar'}
 });
 
@@ -18,9 +18,25 @@ export async function getCollectionReport(collectionId) {
 }
 
 export async function getNftDetail(collectionId, tokenId, walletAddress) {
-  return instance.get(`/collections/${collectionId}/nfts/${tokenId}?walletAddress=${walletAddress}&snapshotDate=2022-07-10`);
+  return instance.get(`/collections/${collectionId}/nfts/${tokenId}?walletAddress=${walletAddress}`);
+}
+export async function getNftDetailCurrent(collectionId, tokenId, walletAddress) {
+  return instance.get(`/collections/${collectionId}/nfts/${tokenId}/current?walletAddress=${walletAddress}`);
+}
+export async function getWallet(walletAddress, collectionId = 1) {
+  return instance.get(`/wallets/${walletAddress}?collectionId=${collectionId}`);
 }
 
-export async function getWallet(walletAddress) {
-  return instance.get(`/wallets/${walletAddress}`);
+
+export async function requestAuthenticate(walletAddress) {
+  return instance.post(`/authenticate/request`, {
+    wallet: walletAddress
+  });
+}
+
+export async function authenticate(walletAddress, signature) {
+  return instance.post(`/authenticate`, {
+    wallet: walletAddress,
+    signature: signature
+  });
 }
