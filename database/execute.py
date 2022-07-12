@@ -2,18 +2,22 @@ from database_fetch import SqlConnector
 import database_script as db
 import datetime
 
+collection_id = 3
+month = 7
 
-for i in range(1, 12):
+
+for i in range(1, 13):
+    print(i)
     # Chạy update database mỗi ngày
 
     # Ngày chạy update database
-    day = datetime.datetime(2022, 7, i)
+    day = datetime.datetime(2022, month, i)
     # có thể dùng datetime.date.today() format theo dạng %Y-%m-%d
     last_day = day - datetime.timedelta(days=1)
     # Ngày trước ngày chạy update database, dùng để fetch report và cập nhật số ngày holding + interest
     day = day.strftime("%Y-%m-%d")
     last_day = last_day.strftime("%Y-%m-%d")
-    collection_id = 2  # Mặc định collection_id là 1 vì hiện tại mới làm 1 collection
+    # Mặc định collection_id là 1 vì hiện tại mới làm 1 collection
 
     # Extract token_holders để sử dụng cho các function sau:
     token_holders = db.extract_token_holders(day, collection_id)

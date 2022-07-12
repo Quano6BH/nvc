@@ -4,7 +4,7 @@ import datetime
 
 # # Insert NVC.Nft
 # sql = SqlConnector()
-# sql.execute_script(db.insert_nft(2, 50))
+# sql.execute_script(db.insert_nft(3, 50))
 
 # Ngày chạy update database
 day = datetime.datetime(2022, 7, 1)
@@ -14,7 +14,7 @@ last_day = day - datetime.timedelta(days=1)
 day = day.strftime("%Y-%m-%d")
 last_day = last_day.strftime("%Y-%m-%d")
 
-collection_id = 2
+collection_id = 3
 
 sql = SqlConnector()
 (_, principal, interest, update_applied_id) = sql.fetch_closest_update(
