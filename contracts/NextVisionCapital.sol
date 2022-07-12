@@ -44,10 +44,8 @@ contract NextVisionCapital is ERC721AQueryable {
     function safeMint(uint256 _quantity) external payable {
         require(_quantity > 0, "Quantity must be greater than 0.");
 
-        uint256 currentTokenId = _tokenIdCounter.current();
-
         require(
-            currentTokenId + _quantity <= COLLECTION_SIZE,
+            totalSupply() + _quantity <= COLLECTION_SIZE,
             "Cannot mint over supply cap"
         );
 
@@ -55,8 +53,6 @@ contract NextVisionCapital is ERC721AQueryable {
             transferERC20(msg.sender, PRICE * _quantity),
             "Fail to transfer token."
         );
-
-        _tokenIdCounter.increment();
 
         _safeMint(msg.sender, _quantity);
     }
