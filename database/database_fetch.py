@@ -117,8 +117,8 @@ class SqlConnector:
     def fetch_closest_update(self, today, collection_id):
         self.cursor.execute(
             "SELECT FromDate,Principal,Interest,Id FROM NVC.CollectionUpdate "
-            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{today}') ) >= 0 AND CollectionId = {collection_id} AND Type = 'Update'"
-            + "ORDER BY FromDate DESC LIMIT 1 ;"
+            + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{today}') ) < 0 AND CollectionId = {collection_id} AND Type = 'Update'"
+            + "ORDER BY FromDate ASC LIMIT 1 ;"
         )
         result = self.cursor.fetchall()
         self.sql.close()
