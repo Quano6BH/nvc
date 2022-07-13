@@ -19,6 +19,7 @@ const Collection = ({ collectionId }) => {
             return;
 
         setDetailLoading(true);
+        setNftStatsCurrent(null);
         getNftDetail(collectionId, selectedToken, connectedWallet)
             .then((rs) => {
                 setNftStats(rs.data)
@@ -52,16 +53,16 @@ const Collection = ({ collectionId }) => {
     }, [connectedWallet])
 
     useEffect(() => {
+        console.log(nftContract)
         if (!nftContract || !connectedWallet)
             return;
-        // console.log(nftContract)
 
         nftContract.methods.balanceOf(connectedWallet)
             .call()
             .then((rs) => {
                 setBalance(rs);
             }).catch(e => console.log(e))
-        // setBalance(2);
+
         nftContract.methods.tokensOfOwner(connectedWallet)
             .call()
             .then((rs) => {

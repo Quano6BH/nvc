@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { loadContract } from "../contracts";
 import configs from '../configs'
 import nftAbi from '../contracts/abis/nft.json'
+import { toChecksumAddress, checkAddressChecksum } from 'web3-utils'
 const { nftContractAddress } = configs;
 
 export const GlobalContext = createContext({});
@@ -25,13 +26,18 @@ export const GlobalContextProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        loadContract(nftAbi, nftContractAddress,
+        // console.log(!checkAddressChecksum(collection?.address))
+        if (!collection?.address)
+            return;
+
+        // console.log(collection?.address, toChecksumAddress(collection?.address))
+        loadContract(nftAbi, toChecksumAddress(collection?.address.trim()),
             {
                 onContractInit: async (contract) => {
                     setNftContract(contract);
                 }
             })
-    })
+    }, [collection?.address])
 
     return <GlobalContext.Provider value={globalContextStore}>{children}</GlobalContext.Provider>
 };
