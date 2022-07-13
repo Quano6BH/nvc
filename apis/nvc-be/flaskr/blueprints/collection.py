@@ -1,28 +1,26 @@
 import datetime
-from turtle import left
-from flask import Blueprint,  request
+from flask import current_app, Blueprint,  request
 import json
 import jwt
-from flaskr.mysql import SqlConnector
 from web3 import Web3
+# import sys
+# print([ key for key in sys.modules.keys() ])
+from flaskr.business_layer.collection import CollectionBusinessLayer
 collection = Blueprint("collections", __name__, url_prefix="/api/collections")
 
-admins = [Web3.toChecksumAddress("0x811a7c9334966401C22B79a55B6aCE749004D543"), Web3.toChecksumAddress(
-    "0xF8eD875352236eF987a9c8855e9a6c0FE9B541db")]
+daily_data = {}
+prev_day = None
 
 
 @collection.route("/<id>")
 def index(id):
-    sql = SqlConnector()
-    collection = sql.get_collection_by_id(id)
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    collection = handler.get_collection_with_updates_by_id(id)
+
     if collection:
         return collection, 200
     else:
         return "Not found", 404
-
-
-daily_data = {}
-prev_day = None
 
 
 @collection.route("/<id>/report")
@@ -42,26 +40,26 @@ def collection_report(id):
         return {'message': 'Invalid token. Please log in again.'}, 403
 
     # print(payload)
-    if(Web3.toChecksumAddress(payload["wallet"]) not in admins):
+    if(Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
         return {'message': 'Unauthorized.'}, 403
 
     global prev_day
     global daily_data
-    print(prev_day)
     if not prev_day or prev_day != datetime.date.today():
-        sql = SqlConnector()
-        unique_holders = sql.get_unique_holder(id)
-        sql = SqlConnector()
-        total_pay = sql.get_total_pay(id)
-        sql = SqlConnector()
-        (principal, interest, total_supply, from_date) = sql.get_report_data(
+
+        handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+        unique_holders = handler.get_unique_holder(id)
+
+        total_pay = handler.get_total_pay(id)
+
+        (principal, interest, total_supply, from_date) = handler.get_report_data(
             id
         )
-        sql = SqlConnector()
-        reset_day = sql.get_reset_day(id)
+
+        reset_day = handler.get_reset_day(id)
         print(reset_day)
         days_left = reset_day - datetime.date.today()
-        print(interest)
+
         estimate = (total_supply * principal *
                     interest / 100 / 365 * days_left.days)
         daily_data = {
@@ -77,13 +75,10 @@ def collection_report(id):
 def nft_detail(collection_id, nft_id):
 
     wallet_address = request.args.get('walletAddress')
-    snapshot_date = request.args.get('snapshotDate')
-    if(not snapshot_date):
-        snapshot_date = datetime.date.today()
-    print(f"snapshot_dateasdasd {str(snapshot_date)}")
-    sql = SqlConnector()
-    earnings = sql.get_nft_history(
-        collection_id, nft_id, wallet_address, snapshot_date)
+
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    earnings = handler.get_nft_history(
+        collection_id, nft_id, wallet_address)
     print(json.dumps(earnings))
     # if earnings is None:
     #     return "Not found", 404
@@ -98,8 +93,9 @@ def nft_detail(collection_id, nft_id):
 
 @collection.route("/<collection_id>/wallets/<wallet_address>")
 def wallet_detail(collection_id, wallet_address):
-    sql = SqlConnector()
-    data = sql.get_wallet_nfts(collection_id, wallet_address)
+
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    data = handler.get_wallet_nfts(collection_id, wallet_address)
     return (data, 200) if data else ("404", 404)
 
 
@@ -110,8 +106,8 @@ def nft_detail_cur(collection_id, nft_id):
     if(not snapshot_date):
         snapshot_date = datetime.date.today()
 
-    sql = SqlConnector()
-    data = sql.get_nft_current(
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    data = handler.get_nft_current(
         collection_id, nft_id, wallet_address, snapshot_date)
     # if earnings is None:
     #     return "Not found", 404

@@ -1,8 +1,6 @@
 
 import datetime
-from flask import request, Blueprint
-from flask_cors import cross_origin
-from flaskr.mysql import SqlConnector
+from flask import request, Blueprint , current_app
 from eth_account.messages import encode_defunct
 from web3.auto import w3
 from web3 import Web3
@@ -13,10 +11,6 @@ authenticate = Blueprint('authenticate', __name__,
 
 nonce_dict = {}
 MESSAGE_TEMPLATE = "You are signing NVC Dashboard App using this nonce for address {wallet} with {nonce}."
-
-# @cross_origin()
-admins = [Web3.toChecksumAddress("0x811a7c9334966401C22B79a55B6aCE749004D543"), Web3.toChecksumAddress(
-    "0xF8eD875352236eF987a9c8855e9a6c0FE9B541db")]
 
 
 @authenticate.route('', methods=["POST"])
@@ -52,7 +46,7 @@ def requestAuthenticate():
     wallet = Web3.toChecksumAddress(data["wallet"])
     # collection_id = request.args.get('signature')
     # collection_id = request.args.get('nonce')
-    if wallet not in admins:
+    if wallet not in current_app.config["ADMIN_WALLETS"]:
         return {
             "message": "",
             "user": True
