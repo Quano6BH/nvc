@@ -138,7 +138,7 @@ const Collection = ({ collectionId }) => {
             const nftStat = nftStats?.earnings ? nftStats?.earnings.filter(x => x.updateAppliedId === id)[0] : null;
             // console.log(from_date)
             const checkbox = Date.parse(from_date) - Date.now() > 0
-            return <tr>
+            return <tr key={"table-" + id}>
                 <td> {getDateFormat(new Date(Date.parse(from_date)))}</ td>
                 <td>$ {principal} </td>
                 <td>{interest} %</td>
@@ -150,28 +150,30 @@ const Collection = ({ collectionId }) => {
     return <>
         {
             walletInfo && !walletInfo.kyc ? <div className="kyc">
-                Ví của bạn chưa được xác minh danh tính<br></br>
-                Vui lòng vào link <a href="www.google.com">NVC kyc</a> để xác minh danh tính
+                Your wallet need identity verification<br></br>
+                Please go to <a href="www.google.com">NVC kyc</a> to verify your identity
             </div>
                 : <></>
         }
         {
-            walletInfo
+            !walletInfo?.error
                 ?
                 <><div className="common-info">
                     <table>
-                        <tr>
-                            <th>Tổng NFTs đang giữ</th>
-                            <td>{balance}</td>
-                        </tr>
-                        <tr>
-                            <th>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}</th>
-                            <td>${walletInfo?.totalEarnInCurrentMonth ?? 0}</td>
-                        </tr>
-                        <tr>
-                            <th>Thời hạn của hợp đồng</th>
-                            <td>{getCollectionDuration(collection)} tháng</td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <th>Total NFTs hold</th>
+                                <td>{balance}</td>
+                            </tr>
+                            <tr>
+                                <th>Interest and principal recorded for {new Date().toLocaleString('default', { month: 'long' })}</th>
+                                <td>${walletInfo?.totalEarnInCurrentMonth ?? 0}</td>
+                            </tr>
+                            <tr>
+                                <th>Collection duration</th>
+                                <td>{getCollectionDuration(collection)} tháng</td>
+                            </tr>
+                        </tbody>
                     </table>
                     {/* <h4>Tổng NFTs đang giữ: {balance}</h4>
             <h4>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}:  </h4>
@@ -179,11 +181,11 @@ const Collection = ({ collectionId }) => {
                 </div>
                     <div className="nfts">
                         <div>
-                            <h3>Kho đồ</h3>
+                            <h3>Inventory</h3>
                             <div className="inventory">
                                 {
                                     ownedTokenIds ? ownedTokenIds.map(tokenId =>
-                                        <div className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
+                                        <div key={"own-" + tokenId} className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
                                             <span>{tokenId}</span>
                                             <img width={"100%"} src={`${ipfs}/${tokenId}.png`} alt={`${tokenId}.png`} />
 
@@ -193,9 +195,9 @@ const Collection = ({ collectionId }) => {
                             </div>
                         </div>
                         <div>
-                            <h3>Chi tiết</h3>
+                            <h3>NFT Stats</h3>
                             <div className={detailLoading ? "table-loading nft-detail" : "nft-detail"}>
-                                {selectedToken ? <>
+                                {selectedToken && !detailLoading ? <>
                                     <h4>Token: #{selectedToken}</h4>
                                     <table >
                                         <thead>

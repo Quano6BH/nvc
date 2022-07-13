@@ -19,9 +19,10 @@ export const GlobalContextProvider = ({ children }) => {
     useEffect(() => {
         if (!connectedWallet)
             return;
-            
         getWallet(connectedWallet).then((rs) => {
             setWalletInfo(rs.data)
+        }).catch((e) => {
+            setWalletInfo({ error: "error" })
         })
     }, [connectedWallet])
 

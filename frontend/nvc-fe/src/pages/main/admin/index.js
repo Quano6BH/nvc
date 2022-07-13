@@ -16,7 +16,7 @@ const Admin = () => {
 
     
     return <>
-        <div class="admin">
+        <div className="admin">
             <table>
                 <tbody>
                     <tr>
@@ -24,19 +24,19 @@ const Admin = () => {
                         <td>{report?.uniqueHolders}</td>
                     </tr>
                     <tr>
-                        <th>Lãi + gốc đã ghi nhận cho toàn bộ holder</th>
+                        <th>Interest + principal recorded for all holders</th>
                         <td>{report?.totalPay}</td>
                     </tr>
                     <tr>
-                        <th>Lãi + gốc chưa ghi nhận cho toàn bộ holder</th>
+                        <th>Interest + principal have not been recorded for all holders</th>
                         <td>{report?.estimate}</td>
                     </tr>
                     <tr>
-                        <th>Giá trị từng NFT</th>
+                        <th>Nft value</th>
                         <td>{collection?.updates[0].principal}</td>
                     </tr>
                     <tr>
-                        <th>Tổng giá trị bộ sưu tập</th>
+                        <th>Total collection value</th>
                         <td>{collection?.updates[0].principal * collection?.totalSupply}</td>
                     </tr>
                 </tbody>

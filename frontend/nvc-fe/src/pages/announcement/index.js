@@ -6,7 +6,8 @@ const Announcement = () => {
 
     return <>
         { walletInfo && collection?.updates
-        ? collection?.updates?.filter(x=>x.type==="Annoucement").map(({ message }) => <section>
+        ? collection?.updates?.filter(x=>x.type==="Annoucement").map(({ message }) => 
+        <section key={"announcement-" + message[-1]}>
             {message}
         </section>) : <></>}
 

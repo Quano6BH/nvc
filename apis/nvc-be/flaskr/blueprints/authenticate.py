@@ -5,23 +5,26 @@ from flask_cors import cross_origin
 from flaskr.mysql import SqlConnector
 from eth_account.messages import encode_defunct
 from web3.auto import w3
+from web3 import Web3
 import uuid
 import jwt
-authenticate = Blueprint('authenticate', __name__, url_prefix='/api/authenticate')
+authenticate = Blueprint('authenticate', __name__,
+                         url_prefix='/api/authenticate')
 
 nonce_dict = {}
 MESSAGE_TEMPLATE = "You are signing NVC Dashboard App using this nonce for address {wallet} with {nonce}."
 
 # @cross_origin()
-admins = ["0x811a7c9334966401C22B79a55B6aCE749004D543"]
+admins = [Web3.toChecksumAddress("0x811a7c9334966401C22B79a55B6aCE749004D543"), Web3.toChecksumAddress(
+    "0xF8eD875352236eF987a9c8855e9a6c0FE9B541db")]
 
 
 @authenticate.route('', methods=["POST"])
 def index():
     data = request.get_json()
-    wallet = data["wallet"]
+    wallet = Web3.toChecksumAddress(data["wallet"])
     signature = data["signature"]
-
+    print(nonce_dict)
     if wallet not in nonce_dict.keys():
         return "Error", 404
 
@@ -46,7 +49,7 @@ def index():
 @authenticate.route('/request', methods=["POST"])
 def requestAuthenticate():
     data = request.get_json()
-    wallet = data["wallet"]
+    wallet = Web3.toChecksumAddress(data["wallet"])
     # collection_id = request.args.get('signature')
     # collection_id = request.args.get('nonce')
     if wallet not in admins:
@@ -54,9 +57,10 @@ def requestAuthenticate():
             "message": "",
             "user": True
         }
-
+# ['0x811a7c9334966401C22B79a55B6aCE749004D543']
+# 0x811a7c9334966401c22b79a55b6ace749004d543
     nonce = uuid.uuid4().hex
-    nonce_dict[wallet] = nonce
+    nonce_dict[Web3.toChecksumAddress(wallet)] = nonce
     # 'b46290528cd949498ce4cc86ca854173'
 
     return {

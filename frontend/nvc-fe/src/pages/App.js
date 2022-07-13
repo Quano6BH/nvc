@@ -7,12 +7,13 @@ import Announcement from './announcement';
 import { loadWeb3 } from '../contracts'
 import { getCollection } from '../apis/nvcApi'
 const App = () => {
-  const { setConnectedWallet, setCollection } = useContext(GlobalContext);
+  const { setConnectedWallet, connectedWallet, setCollection } = useContext(GlobalContext);
   const collectionId = 3;
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
-        setConnectedWallet(accounts[0]);
+        if (connectedWallet != accounts[0])
+          setConnectedWallet(accounts[0]);
       },
 
     });

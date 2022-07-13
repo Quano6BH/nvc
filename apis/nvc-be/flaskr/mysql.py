@@ -117,18 +117,17 @@ class SqlConnector:
     ):  # Detail NFT
         snapshot_date = snapshot_date or datetime.date.today()
 
-        query = f"SELECT hbm.Holder, hbm.CollectionId, hbd.TokenId, SnapshotDate, "
-        +f"         cu.Interest, cu.Principal, hbm.Paid, hbm.UpdateAppliedId "
-        +f"FROM {self.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm "
-        +f"INNER JOIN {self.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd "
-        (
-            +f"ON hbm.CollectionId = hbd.CollectionId AND hbm.Holder = hbd.Holder AND hbm.ResetDate = hbd.SnapshotDate "
-            + f"INNER JOIN {self.COLLECTION_UPDATE_TABLE_NAME} cu "
-        )
-        +f"ON cu.Id = hbm.UpdateAppliedId  "
-        +f"WHERE hbm.CollectionId = {collection_id} "
-        +f"AND hbm.Holder = '{wallet_address}' "
-        +f"AND hbd.TokenId = '{token_id}';"
+        query = (f"SELECT hbm.Holder, hbm.CollectionId, hbd.TokenId, SnapshotDate, "
+                 + f"         cu.Interest, cu.Principal, hbm.Paid, hbm.UpdateAppliedId "
+                 + f"FROM {self.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm "
+                 + f"INNER JOIN {self.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd "
+                 + f"ON hbm.CollectionId = hbd.CollectionId AND hbm.Holder = hbd.Holder AND hbm.ResetDate = hbd.SnapshotDate "
+                 + f"INNER JOIN {self.COLLECTION_UPDATE_TABLE_NAME} cu "
+
+                 + f"ON cu.Id = hbm.UpdateAppliedId  "
+                 + f"WHERE hbm.CollectionId = {collection_id} "
+                 + f"AND hbm.Holder = '{wallet_address}' "
+                 + f"AND hbd.TokenId = '{token_id}';")
 
         print(query)
         self.cursor.execute(query)
@@ -312,7 +311,7 @@ class SqlConnector:
         data = {
             "totalEarnInCurrentMonth": totalEarnInCurrentMonth,
             "kyc": kyc == b'\x01',
-            "walletAddress" : wallet_address
+            "walletAddress": wallet_address
         }
 
         return data

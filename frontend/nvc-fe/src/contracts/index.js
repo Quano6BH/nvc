@@ -51,7 +51,7 @@ const connectWallet = async ({ onAccountConnected }) => {
         const web3 = window.web3;
 
         const accounts = await web3.eth.getAccounts()
-
+        // const accounts = ethereum.request({ method: 'eth_accounts' })
         const networkId = await web3.eth.net.getId()
 
         onAccountConnected(accounts, networkId)
@@ -70,8 +70,6 @@ const connectWallet = async ({ onAccountConnected }) => {
 }
 
 const signMessage = async (message, account) => {
-    const signMessage = window.web3.utils.sha3(message)
-
     return window.web3.eth.personal.sign(message, account);
 };
 

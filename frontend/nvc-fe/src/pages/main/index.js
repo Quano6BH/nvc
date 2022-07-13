@@ -21,15 +21,21 @@ const Main = () => {
 
         // setLoading(true)
 
+        // console.log("--------------" + connectedWallet)
         setIsAuthorized(false)
         setIsAdmin(0)
         setJwt("")
         setLoading(true)
         requestAuthenticate(connectedWallet).then((rs) => {
             const { message, user } = rs.data;
+            // console.log("--------------" + connectedWallet, rs, user)
             if (!user) {
+                console.log("sign--------------" + connectedWallet, rs, user)
                 signMessage(message, connectedWallet).then((signature, error) => {
+                    
+                    // console.log("signMessage.then--------------" + connectedWallet, rs, user)
                     authenticate(connectedWallet, signature).then(resp => {
+                        // console.log("authenticate--------------" + connectedWallet, rs, user)
                         const jwtData = resp.data;
                         setIsAuthorized(true)
                         setJwt(jwtData)
@@ -45,7 +51,7 @@ const Main = () => {
 
                 setIsAdmin(1)
             }
-            
+
             setLoading(false)
         }).catch(() => {
 

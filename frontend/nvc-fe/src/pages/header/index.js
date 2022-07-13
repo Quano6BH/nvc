@@ -7,7 +7,7 @@ const Header = () => {
     const { connectedWallet, setConnectedWallet, collection } = useContext(GlobalContext)
     const [endDate, setEndDate] = useState()
     useEffect(() => {
-        console.log(collection)
+        // console.log(collection)
         if (!collection?.endDate)
             return;
         setEndDate(collection?.endDate)
@@ -15,7 +15,8 @@ const Header = () => {
     const onConnectWallet = async (e) => {
         await connectWallet({
             onAccountConnected: (accounts) => {
-                setConnectedWallet(accounts[0]);
+                if(connectedWallet != accounts[0])
+                    setConnectedWallet(accounts[0]);
             }
         });
     }
@@ -39,22 +40,25 @@ const Header = () => {
         let dates = collection?.updates.map(x => new Date(Date.parse(x.from_date)));
 
         var orderedDates = sortDates(dates);
-        console.log(orderedDates)
+        // console.log(orderedDates)
         var nextDate = orderedDates.filter(function (date) {
-            console.log(Date.now(), date, Date.now() - date)
+            // console.log(Date.now(), date, Date.now() - date)
             return (Date.now() - date) < 0;
         })[0];
 
         // console.log(Date.now(), new Date(nextDate))
 
-        return <Countdown
-            date={nextDate}
-            intervalDelay={0}
-            precision={3}
+        return <>
+            
+            <Countdown
+                date={nextDate}
+                intervalDelay={0}
+                precision={3}
+                
 
-
-            renderer={({ days, hours }) => <div>{days} ngày: {hours} giờ</div>}
-        ></Countdown>;
+                renderer={({ days, hours }) => <div>Next payment countdown: {days} days {hours} hours</div>}
+            ></Countdown>
+        </>;
     },
         [collection?.updates]);
 
@@ -65,7 +69,7 @@ const Header = () => {
         </div>
 
         <div className='connect-wallet-button' onClick={onConnectWallet}>
-            {connectedWallet ? shortenAddress(connectedWallet) : 'Kết nối ví'}
+            {connectedWallet ? shortenAddress(connectedWallet) : 'Connect Wallet'}
         </div>
         {/* <button onClick={onConnectWallet}>Connect Wallet</button> */}
     </header>
