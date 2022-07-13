@@ -300,10 +300,15 @@ class SqlConnector:
         result = self.cursor.fetchone()
 
         self.sql.close()
+
         if not result:
             return None
-        print(result)
+
         totalEarnInCurrentMonth, kyc = result
+
+        if not totalEarnInCurrentMonth:
+            return None
+
         data = {
             "totalEarnInCurrentMonth": totalEarnInCurrentMonth,
             "kyc": kyc == b'\x01',

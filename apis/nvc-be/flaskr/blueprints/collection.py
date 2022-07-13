@@ -78,7 +78,7 @@ def nft_detail(collection_id, nft_id):
 def wallet_detail(collection_id, wallet_address):
     sql = SqlConnector()
     data = sql.get_wallet_nfts(collection_id, wallet_address)
-    return (data, 200) if data else (data, 404)
+    return (data, 200) if data else ("404", 404)
 
 
 @collection.route("/<collection_id>/nfts/<nft_id>/current")

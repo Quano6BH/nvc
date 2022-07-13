@@ -148,70 +148,80 @@ const Collection = ({ collectionId }) => {
         });
     }, [collection, nftStats])
     return <>
-        <div className="kyc">
-            Ví của bạn chưa được xác minh danh tính<br></br>
-            Vui lòng vào link <a href="www.google.com">NVC kyc</a> để xác minh danh tính
-        </div>
-        <div className="common-info">
-            <table>
-                <tr>
-                    <th>Tổng NFTs đang giữ</th>
-                    <td>{balance}</td>
-                </tr>
-                <tr>
-                    <th>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}</th>
-                    <td>${walletInfo?.totalEarnInCurrentMonth ?? 0}</td>
-                </tr>
-                <tr>
-                    <th>Thời hạn của hợp đồng</th>
-                    <td>{getCollectionDuration(collection)} tháng</td>
-                </tr>
-            </table>
-            {/* <h4>Tổng NFTs đang giữ: {balance}</h4>
+        {
+            walletInfo && !walletInfo.kyc ? <div className="kyc">
+                Ví của bạn chưa được xác minh danh tính<br></br>
+                Vui lòng vào link <a href="www.google.com">NVC kyc</a> để xác minh danh tính
+            </div>
+                : <></>
+        }
+        {
+            walletInfo
+                ?
+                <><div className="common-info">
+                    <table>
+                        <tr>
+                            <th>Tổng NFTs đang giữ</th>
+                            <td>{balance}</td>
+                        </tr>
+                        <tr>
+                            <th>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}</th>
+                            <td>${walletInfo?.totalEarnInCurrentMonth ?? 0}</td>
+                        </tr>
+                        <tr>
+                            <th>Thời hạn của hợp đồng</th>
+                            <td>{getCollectionDuration(collection)} tháng</td>
+                        </tr>
+                    </table>
+                    {/* <h4>Tổng NFTs đang giữ: {balance}</h4>
             <h4>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}:  </h4>
             <h4>Thời hạn của hợp đồng: {getCollectionDuration(collection)} tháng</h4> */}
-        </div>
-        <div className="nfts">
-            <div>
-                <h3>Kho đồ</h3>
-                <div className="inventory">
-                    {
-                        ownedTokenIds ? ownedTokenIds.map(tokenId =>
-                            <div className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
-                                <span>{tokenId}</span>
-                                <img width={"100%"} src={`${ipfs}/${tokenId}.png`} alt={`${tokenId}.png`} />
-
-
-                            </div>) : <></>
-                    }
                 </div>
-            </div>
-            <div>
-                <h3>Chi tiết</h3>
-                <div className={detailLoading ? "table-loading nft-detail" : "nft-detail"}>
-                    {selectedToken ? <>
-                        <h4>Token: #{selectedToken}</h4>
-                        <table >
-                            <thead>
-                                <tr>
-                                    <th>Ngày</th>
-                                    <th>Gốc</th>
-                                    <th>Lãi/năm</th>
-                                    <th>Chốt</th>
-                                    <th>Buy back</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {generateNftStatsTable}
-                            </tbody>
-                        </table>
+                    <div className="nfts">
+                        <div>
+                            <h3>Kho đồ</h3>
+                            <div className="inventory">
+                                {
+                                    ownedTokenIds ? ownedTokenIds.map(tokenId =>
+                                        <div className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
+                                            <span>{tokenId}</span>
+                                            <img width={"100%"} src={`${ipfs}/${tokenId}.png`} alt={`${tokenId}.png`} />
 
-                        <p>Số ngày hold nft của ví trong tháng: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p></> : ""}
 
-                </div>
-            </div>
+                                        </div>) : <></>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Chi tiết</h3>
+                            <div className={detailLoading ? "table-loading nft-detail" : "nft-detail"}>
+                                {selectedToken ? <>
+                                    <h4>Token: #{selectedToken}</h4>
+                                    <table >
+                                        <thead>
+                                            <tr>
+                                                <th>Ngày</th>
+                                                <th>Gốc</th>
+                                                <th>Lãi/năm</th>
+                                                <th>Chốt</th>
+                                                <th>Buy back</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {generateNftStatsTable}
+                                        </tbody>
+                                    </table>
 
-        </div>
+                                    <p>Số ngày hold nft của ví trong tháng: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p></> : ""}
+
+                            </div>
+                        </div>
+
+                    </div></>
+                :
+                <>No info</>
+        }
+
 
     </>
 }
