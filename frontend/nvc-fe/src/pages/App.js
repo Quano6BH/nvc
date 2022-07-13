@@ -10,10 +10,14 @@ const App = () => {
   const { setConnectedWallet, connectedWallet, setCollection } = useContext(GlobalContext);
   const collectionId = 3;
   useEffect(() => {
+    console.log("useEffect loadWeb3")
     loadWeb3({
       onAccountChanged: (accounts) => {
-        if (connectedWallet != accounts[0])
+        console.log("loadWeb3", accounts[0], connectedWallet)
+        if (connectedWallet != accounts[0]) {
+          console.log("change", accounts[0], connectedWallet)
           setConnectedWallet(accounts[0]);
+        }
       },
 
     });

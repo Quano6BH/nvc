@@ -2,19 +2,19 @@ import { useContext, useEffect, useState } from 'react';
 import { getCollectionReport } from '../../../apis/nvcApi';
 import { GlobalContext } from '../../../contexts/GlobalContext';
 import './admin.css'
-const Admin = () => {
+const Admin = (params) => {
+    const { jwt } = params;
     const [report, setReport] = useState();
     const { collection } = useContext(GlobalContext);
     useEffect(() => {
         if (!collection?.id)
             return;
-        getCollectionReport(collection?.id).then(rs => {
+        getCollectionReport(collection?.id, jwt).then(rs => {
             setReport(rs.data)
         })
 
     }, [collection?.id])
 
-    
     return <>
         <div className="admin">
             <table>

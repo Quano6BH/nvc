@@ -23,17 +23,11 @@ const loadWeb3 = async ({ onAccountChanged }) => {
     try {
         if (!isMetaMaskInstalled) return alert('Please install Metamask');
         const { ethereum } = window;
-        ethereum.on('accountsChanged', (accounts) => {
+        const accountChanged = (accounts) => {
             onAccountChanged(accounts);
-            // if (!accounts) {
-            //     setGlobalState('connectedAccount', null);
-
-            // } else {
-            //     setGlobalState('connectedAccount', accounts[0])
-
-            // }
-
-        });
+        };
+        ethereum.removeListener("accountsChanged", accountChanged);
+        ethereum.on('accountsChanged', accountChanged);
 
     } catch (e) {
         console.error(e)
@@ -70,6 +64,7 @@ const connectWallet = async ({ onAccountConnected }) => {
 }
 
 const signMessage = async (message, account) => {
+    alert("signMessage" + account)
     return window.web3.eth.personal.sign(message, account);
 };
 

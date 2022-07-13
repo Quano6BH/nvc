@@ -2,10 +2,13 @@ import datetime
 from turtle import left
 from flask import Blueprint,  request
 import json
-
+import jwt
 from flaskr.mysql import SqlConnector
-
+from web3 import Web3
 collection = Blueprint("collections", __name__, url_prefix="/api/collections")
+
+admins = [Web3.toChecksumAddress("0x811a7c9334966401C22B79a55B6aCE749004D543"), Web3.toChecksumAddress(
+    "0xF8eD875352236eF987a9c8855e9a6c0FE9B541db")]
 
 
 @collection.route("/<id>")
@@ -24,6 +27,24 @@ prev_day = None
 
 @collection.route("/<id>/report")
 def collection_report(id):
+    authorization = request.headers.get('Authorization')
+    if(not authorization):
+        return {'message': 'Unauthorized.'}, 403
+
+    authorization = authorization.replace(authorization[0:7], '')
+    payload = {}
+    try:
+
+        payload = jwt.decode(authorization, "secret", algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return {'message': 'Token expired, log in again'}, 403
+    except jwt.InvalidTokenError:
+        return {'message': 'Invalid token. Please log in again.'}, 403
+
+    # print(payload)
+    if(Web3.toChecksumAddress(payload["wallet"]) not in admins):
+        return {'message': 'Unauthorized.'}, 403
+
     global prev_day
     global daily_data
     print(prev_day)
@@ -54,6 +75,7 @@ def collection_report(id):
 
 @collection.route("/<collection_id>/nfts/<nft_id>")
 def nft_detail(collection_id, nft_id):
+
     wallet_address = request.args.get('walletAddress')
     snapshot_date = request.args.get('snapshotDate')
     if(not snapshot_date):

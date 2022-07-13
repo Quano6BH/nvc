@@ -15,8 +15,11 @@ const Header = () => {
     const onConnectWallet = async (e) => {
         await connectWallet({
             onAccountConnected: (accounts) => {
-                if(connectedWallet != accounts[0])
+                console.log("connectWallet", accounts[0], connectedWallet)
+                if (connectedWallet != accounts[0]) {
+                    console.log("change", accounts[0], connectedWallet)
                     setConnectedWallet(accounts[0]);
+                }
             }
         });
     }
@@ -49,12 +52,12 @@ const Header = () => {
         // console.log(Date.now(), new Date(nextDate))
 
         return <>
-            
+
             <Countdown
                 date={nextDate}
                 intervalDelay={0}
                 precision={3}
-                
+
 
                 renderer={({ days, hours }) => <div>Next payment countdown: {days} days {hours} hours</div>}
             ></Countdown>

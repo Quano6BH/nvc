@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://64.227.70.163/api',
+  baseURL: 'http://localhost:5000/api',
   // timeout: 60000,
   // headers: {'X-Custom-Header': 'foobar'}
 });
@@ -13,8 +13,10 @@ export async function getCollection(collectionId) {
   return instance.get(`/collections/${collectionId}`);
 }
 
-export async function getCollectionReport(collectionId) {
-  return instance.get(`/collections/${collectionId}/report`);
+export async function getCollectionReport(collectionId, jwt) {
+  return instance.get(`/collections/${collectionId}/report`, {
+    // headers: { "Authorization": `Bearer ${jwt}` }
+  });
 }
 
 export async function getNftDetail(collectionId, tokenId, walletAddress) {
