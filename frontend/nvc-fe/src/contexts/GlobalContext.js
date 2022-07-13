@@ -1,5 +1,9 @@
 import { createContext, useEffect, useState } from "react";
-import { getWallet } from "../apis/nvcApi";
+import { loadContract } from "../contracts";
+import configs from '../configs'
+import nftAbi from '../contracts/abis/nft.json'
+const { nftContractAddress } = configs;
+
 export const GlobalContext = createContext({});
 
 export const GlobalContextProvider = ({ children }) => {
@@ -7,6 +11,7 @@ export const GlobalContextProvider = ({ children }) => {
     const [connectedWallet, setConnectedWallet] = useState();
     const [walletInfo, setWalletInfo] = useState(null);
     const [collection, setCollection] = useState({});
+    const [nftContract, setNftContract] = useState(null);
 
     // You can choose to wrap this in a useMemo if you want to be extra careful about potential rerenders
     const globalContextStore = {
@@ -14,17 +19,19 @@ export const GlobalContextProvider = ({ children }) => {
         walletInfo,
         setConnectedWallet,
         collection,
-        setCollection
+        setCollection,
+        setWalletInfo,
+        nftContract
     }
+
     useEffect(() => {
-        if (!connectedWallet)
-            return;
-        getWallet(connectedWallet).then((rs) => {
-            setWalletInfo(rs.data)
-        }).catch((e) => {
-            setWalletInfo({ error: "error" })
-        })
-    }, [connectedWallet])
+        loadContract(nftAbi, nftContractAddress,
+            {
+                onContractInit: async (contract) => {
+                    setNftContract(contract);
+                }
+            })
+    })
 
     return <GlobalContext.Provider value={globalContextStore}>{children}</GlobalContext.Provider>
 };

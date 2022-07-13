@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext } from 'react';
 import { GlobalContext } from '../../contexts/GlobalContext';
 import './announcement.css'
 const Announcement = () => {

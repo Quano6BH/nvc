@@ -1,40 +1,28 @@
 import { useContext, useEffect, useState, useMemo } from "react"
 import { GlobalContext } from "../../../contexts/GlobalContext"
-import { loadContract } from "../../../contracts";
-import nftAbi from '../../../contracts/abis/nft.json'
-import configs from '../../../configs'
 import './collection.css'
-import { getNftDetail, getNftDetailCurrent } from "../../../apis/nvcApi";
+import { getNftDetail, getNftDetailCurrent, getWallet } from "../../../apis/nvcApi";
+import loadingGif from '../../../assets/loading.gif'
 const Collection = ({ collectionId }) => {
-    const { connectedWallet, collection, walletInfo } = useContext(GlobalContext);
-    const [nftContract, setNftContract] = useState();
+    const { connectedWallet, collection, walletInfo, setWalletInfo, nftContract } = useContext(GlobalContext);
     const [ownedTokenIds, setOwnedTokenIds] = useState();
     const [balance, setBalance] = useState();
     const [selectedToken, setSelectedToken] = useState(null);
     const [nftStats, setNftStats] = useState(null);
     const [nftStatsCurrent, setNftStatsCurrent] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
-    const { nftContractAddress } = configs;
     const ipfs = "https://ikzttp.mypinata.cloud/ipfs/QmYDvPAXtiJg7s8JdRBSLWdgSphQdac8j1YuQNNxcGE1hg"
 
-    useEffect(() => {
-        loadContract(nftAbi, nftContractAddress,
-            {
-                onContractInit: async (contract) => {
-                    setNftContract(contract);
-                }
-            })
-    }, [nftContractAddress])
 
     useEffect(() => {
         if (!selectedToken)
             return;
 
         setDetailLoading(true);
-        getNftDetail(collection?.id, selectedToken, connectedWallet)
+        getNftDetail(collectionId, selectedToken, connectedWallet)
             .then((rs) => {
                 setNftStats(rs.data)
-                getNftDetailCurrent(collection?.id, selectedToken, connectedWallet)
+                getNftDetailCurrent(collectionId, selectedToken, connectedWallet)
                     .then((rs) => {
                         setNftStatsCurrent(rs.data)
                     }).finally(() => {
@@ -46,47 +34,27 @@ const Collection = ({ collectionId }) => {
                 setDetailLoading(false);
             })
 
-    }, [selectedToken, collection?.id, connectedWallet])
-
-    // useEffect(() => {
-    //     if (!selectedToken)
-    //         return;
-
-    //     setNftStats({
-    //         currentOwner: "0x..",
-    //         holdDaysInCurrentMonth: 3,//number of days the NFT owned by the owner
-    //         collectionId: 1,
-    //         earnings: [
-    //             {
-    //                 month: 1,//1-12, 
-    //                 principalEarned: 12,//by $,gốc nhận được của tháng 1 
-    //                 interestEarned: 0.1,//by $, lãi nhận được của tháng 1
-    //                 interestRate: 0.1,//by %, % lãi của tháng
-    //                 principalRate: 20//by $, tiền gốc mỗi NFT của tháng
-    //             },
-    //             {
-    //                 month: 2,//1-12, 
-    //                 principalEarned: 12,//by $,gốc nhận được của tháng 1 
-    //                 interestEarned: 0.1,//by $, lãi nhận được của tháng 1
-    //                 interestRate: 0.1,//by %, % lãi của tháng
-    //                 principalRate: 20//by $, tiền gốc mỗi NFT của tháng
-    //             }
-    //         ]
-    //     })
-
-
-
-    // }, [selectedToken])
+    }, [selectedToken, collectionId, connectedWallet])
 
     const onTokenClicked = (tokenId) => {
         setSelectedToken(tokenId)
     }
 
+    useEffect(() => {
+        if (!connectedWallet)
+            return;
+
+        getWallet(connectedWallet).then((rs) => {
+            setWalletInfo(rs.data)
+        }).catch((e) => {
+            setWalletInfo({ error: "error" })
+        })
+    }, [connectedWallet])
 
     useEffect(() => {
         if (!nftContract || !connectedWallet)
             return;
-        console.log(nftContract)
+        // console.log(nftContract)
 
         nftContract.methods.balanceOf(connectedWallet)
             .call()
@@ -115,13 +83,6 @@ const Collection = ({ collectionId }) => {
         )
     }
 
-    const getMonthsDiff = (d1, d2) => {
-        let monthsDiff = (d2.getFullYear() - d1.getFullYear()) * 12;
-        monthsDiff -= d1.getMonth();
-        monthsDiff += d2.getMonth();
-        return monthsDiff <= 0 ? 0 : monthsDiff;
-    }
-
     const getDateFormat = (date) => {
         return date.toLocaleDateString("vi-VN");
     }
@@ -134,9 +95,7 @@ const Collection = ({ collectionId }) => {
         const collectionUpdates = collection?.updates.filter(x => x.type === "Update");
 
         return collectionUpdates.map(({ from_date, principal, interest, id, buyBack }) => {
-            // console.log(nftStats?.earnings, id)
-            const nftStat = nftStats?.earnings ? nftStats?.earnings.filter(x => x.updateAppliedId === id)[0] : null;
-            // console.log(from_date)
+
             const checkbox = Date.parse(from_date) - Date.now() > 0
             return <tr key={"table-" + id}>
                 <td> {getDateFormat(new Date(Date.parse(from_date)))}</ td>
@@ -146,7 +105,8 @@ const Collection = ({ collectionId }) => {
                 <td>{buyBack ? "x" : ""}</td>
             </tr >;
         });
-    }, [collection, nftStats])
+    }, [collection])
+
     return <>
         {
             walletInfo && !walletInfo.kyc ? <div className="kyc">
@@ -175,9 +135,6 @@ const Collection = ({ collectionId }) => {
                             </tr>
                         </tbody>
                     </table>
-                    {/* <h4>Tổng NFTs đang giữ: {balance}</h4>
-            <h4>Lãi và gốc ghi nhận cho tháng {new Date().getMonth() + 1}:  </h4>
-            <h4>Thời hạn của hợp đồng: {getCollectionDuration(collection)} tháng</h4> */}
                 </div>
                     <div className="nfts">
                         <div>
@@ -196,16 +153,18 @@ const Collection = ({ collectionId }) => {
                         </div>
                         <div>
                             <h3>NFT Stats</h3>
-                            <div className={detailLoading ? "table-loading nft-detail" : "nft-detail"}>
+                            <div className={"nft-detail"}>
+                                {detailLoading ? <img src={loadingGif} style={{ position: "absolute", margin: "auto" }} alt="loading" /> : <></>}
+
                                 {selectedToken && !detailLoading ? <>
                                     <h4>Token: #{selectedToken}</h4>
                                     <table >
                                         <thead>
                                             <tr>
-                                                <th>Ngày</th>
-                                                <th>Gốc</th>
-                                                <th>Lãi/năm</th>
-                                                <th>Chốt</th>
+                                                <th>Date</th>
+                                                <th>Pricipal</th>
+                                                <th>Interest/Year</th>
+                                                <th>Checkbox</th>
                                                 <th>Buy back</th>
                                             </tr>
                                         </thead>
@@ -214,7 +173,7 @@ const Collection = ({ collectionId }) => {
                                         </tbody>
                                     </table>
 
-                                    <p>Số ngày hold nft của ví trong tháng: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p></> : ""}
+                                    <p>Days holding the NFT in month: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p></> : ""}
 
                             </div>
                         </div>

@@ -1,23 +1,15 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useMemo } from 'react';
 import { GlobalContext } from '../../contexts/GlobalContext';
 import { connectWallet, shortenAddress } from '../../contracts';
 import Countdown from 'react-countdown'
 import './header.css'
 const Header = () => {
     const { connectedWallet, setConnectedWallet, collection } = useContext(GlobalContext)
-    const [endDate, setEndDate] = useState()
-    useEffect(() => {
-        // console.log(collection)
-        if (!collection?.endDate)
-            return;
-        setEndDate(collection?.endDate)
-    }, [collection?.endDate])
+
     const onConnectWallet = async (e) => {
         await connectWallet({
             onAccountConnected: (accounts) => {
-                console.log("connectWallet", accounts[0], connectedWallet)
-                if (connectedWallet != accounts[0]) {
-                    console.log("change", accounts[0], connectedWallet)
+                if (connectedWallet !== accounts[0]) {
                     setConnectedWallet(accounts[0]);
                 }
             }
