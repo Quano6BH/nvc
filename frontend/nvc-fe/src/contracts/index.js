@@ -66,8 +66,45 @@ const connectWallet = async ({ onAccountConnected }) => {
 const signMessage = async (message, account) => {
     return window.web3.eth.personal.sign(message, account);
 };
+const switchNetwork = async ({ chainId, chainName = 'Binance Smart Chain', ...others }) => {
+    // {
+    //     chainId: Web3.utils.toHex(chainId),
+    //     chainName: ,
+    //     nativeCurrency: {
+    //         name: 'Binance Coin',
+    //         symbol: 'BNB',
+    //         decimals: 18
+    //     },
+    //     rpcUrls: ['https://bsc-dataseed.binance.org/'],
+    //     blockExplorerUrls: ['https://bscscan.com']
+    // }
+    const currentChainId = await window.web3.eth.net.getId()
 
+    if (currentChainId !== chainId) {
+        try {
+            await window.web3.currentProvider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: Web3.utils.toHex(chainId) }],
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.web3.currentProvider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: Web3.utils.toHex(chainId),
+                            chainName: chainName,
+                            ...others
+                        }]
+                    });
+                } catch (addError) {
+                    console.error(addError);
+                }
+            }
+        }
+    }
+}
 
 const shortenAddress = (address) => address.substring(0, 5) + "....." + address.substring(address.length - 4, address.length);
 
-export { connectWallet, loadWeb3, loadContract, shortenAddress, requestApprovalForTokenAsync, signMessage }
+export { connectWallet, loadWeb3, loadContract, shortenAddress, requestApprovalForTokenAsync, signMessage, switchNetwork }

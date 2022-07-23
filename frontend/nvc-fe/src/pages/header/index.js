@@ -1,12 +1,25 @@
 import { useContext, useMemo } from 'react';
 import { GlobalContext } from '../../contexts/GlobalContext';
-import { connectWallet, shortenAddress } from '../../contracts';
+import { connectWallet, shortenAddress, switchNetwork } from '../../contracts';
 import Countdown from 'react-countdown'
 import './header.css'
 const Header = () => {
     const { connectedWallet, setConnectedWallet, collection } = useContext(GlobalContext)
 
     const onConnectWallet = async (e) => {
+        await switchNetwork(
+            {
+                chainId: 97,
+                chainName: "Binance Smart Chain Testnet",
+                nativeCurrency: {
+                    name: 'Binance Coin',
+                    symbol: 'tBNB',
+                    decimals: 18
+                },
+                rpcUrls: ['https://data-seed-prebsc-1-s1.binance.org:8545'],
+                blockExplorerUrls: ['https://testnet.bscscan.com']
+            });
+
         await connectWallet({
             onAccountConnected: (accounts) => {
                 if (connectedWallet !== accounts[0]) {

@@ -12,3 +12,23 @@
 .admin table td{
     text-align: right;
 }
+
+.boxsizingBorder {
+    height: 500px;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            resize: none;
+            width: 100%;
+}
+fieldset{
+    width: 50%;
+}
+.submit-button{
+    
+    cursor: pointer;
+    padding: 1vh 2vh;
+    background-color: #C69B7B;
+    color: #3A3845;
+    border-radius: 5px;
+}

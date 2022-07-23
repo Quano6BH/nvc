@@ -7,7 +7,7 @@ import { loadWeb3 } from '../contracts'
 import { getCollection } from '../apis/nvcApi'
 const App = () => {
   const { setConnectedWallet, connectedWallet, setCollection } = useContext(GlobalContext);
-  const collectionId = 3;
+  const collectionId = 4;
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {

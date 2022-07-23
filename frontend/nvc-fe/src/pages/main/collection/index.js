@@ -132,7 +132,7 @@ const Collection = ({ collectionId }) => {
                             </tr>
                             <tr>
                                 <th>Collection duration</th>
-                                <td>{getCollectionDuration(collection)} tháng</td>
+                                <td>{getCollectionDuration(collection)} months</td>
                             </tr>
                         </tbody>
                     </table>
