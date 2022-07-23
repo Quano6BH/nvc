@@ -47,16 +47,20 @@ def collection_report(id):
     global daily_data
     if not prev_day or prev_day != datetime.date.today():
 
-        handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-        unique_holders = handler.get_unique_holder(id)
+        snapshot_date = request.args.get('snapshotDate')
+        if(not snapshot_date):
+            snapshot_date = datetime.date.today()
 
-        total_pay = handler.get_total_pay(id)
+        handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+        unique_holders = handler.get_unique_holder(id, snapshot_date)
+
+        total_pay = handler.get_total_pay(id, snapshot_date)
 
         (principal, interest, total_supply, from_date) = handler.get_report_data(
             id
         )
 
-        reset_day = handler.get_reset_day(id)
+        reset_day = handler.get_reset_day(id, snapshot_date)
         print(reset_day)
         days_left = reset_day - datetime.date.today()
 
@@ -93,9 +97,13 @@ def nft_detail(collection_id, nft_id):
 
 @collection.route("/<collection_id>/wallets/<wallet_address>")
 def wallet_detail(collection_id, wallet_address):
+    snapshot_date = request.args.get('snapshotDate')
+    if(not snapshot_date):
+        snapshot_date = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    data = handler.get_wallet_nfts(collection_id, wallet_address)
+    data = handler.get_wallet_nfts(
+        collection_id, wallet_address, snapshot_date)
     return (data, 200) if data else ("404", 404)
 
 

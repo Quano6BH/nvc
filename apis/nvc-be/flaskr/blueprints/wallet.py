@@ -2,6 +2,7 @@
 import datetime
 from flask import request, Blueprint, current_app
 from eth_account.messages import encode_defunct
+import jwt
 from web3.auto import w3
 from web3 import Web3
 from flaskr.business_layer.wallet import WalletBusinessLayer
@@ -36,6 +37,24 @@ def index():
         ]
     }
     '''
+    authorization = request.headers.get('Authorization')
+    if(not authorization):
+        return {'message': 'Unauthorized.'}, 403
+
+    authorization = authorization.replace(authorization[0:7], '')
+    payload = {}
+    try:
+
+        payload = jwt.decode(authorization, "secret", algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return {'message': 'Token expired, log in again'}, 403
+    except jwt.InvalidTokenError:
+        return {'message': 'Invalid token. Please log in again.'}, 403
+
+    # print(payload)
+    if(Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
+        return {'message': 'Unauthorized.'}, 403
+
     body = request.get_json()
     kyc = body["kyc"]
     addresses = body["addresses"]

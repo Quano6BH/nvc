@@ -7,7 +7,7 @@ from .base import BaseDataLayer
 class WalletDataLayer(BaseDataLayer):
 
     def __init__(self, db_config):
-        self.db_config = db_config
+        BaseDataLayer.__init__(self,db_config)
 
     def create_db_connection(self, db_config):
         return MySQLdb.connect(
