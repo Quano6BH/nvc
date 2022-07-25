@@ -1,4 +1,5 @@
 import datetime
+import math
 from flaskr.data_layer.collection import CollectionDataLayer
 
 from web3 import Web3
@@ -8,6 +9,26 @@ class CollectionBusinessLayer:
 
     def __init__(self, db_config):
         self.data_layer = CollectionDataLayer(db_config)
+    def get_collection_interest_report(self, collection_id, snapshot_date):
+        snapshot_date = snapshot_date or datetime.date.today()
+        
+        reset_date, = self.data_layer.get_collection_latest_holder_by_month(collection_id, snapshot_date)
+        # by_date_snapshot_Date = datetime.datetime.strptime(reset_date, "%Y-%m-%d")
+        data = self.data_layer.get_collection_interest_report(collection_id, reset_date- datetime.timedelta(days=1))
+        
+        result ={
+            "data":[],
+            "parsed":""
+        }
+        for wallet_data in data:
+            interest = "{:.2f}".format(wallet_data[1])
+            result["data"].append({
+                "wallet":wallet_data[0],
+                "interest":interest
+            })
+            result["parsed"]+=f"{wallet_data[0]}={interest}\n"
+        
+        return result
 
     def get_collection_with_updates_by_id(self, collection_id):
         data = self.data_layer.get_collection_with_updates_by_id(collection_id)
