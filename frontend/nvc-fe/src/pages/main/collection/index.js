@@ -45,12 +45,12 @@ const Collection = ({ collectionId }) => {
         if (!connectedWallet)
             return;
 
-        getWallet(connectedWallet).then((rs) => {
+        getWallet(connectedWallet, collectionId).then((rs) => {
             setWalletInfo(rs.data)
         }).catch((e) => {
             setWalletInfo({ error: "error" })
         })
-    }, [connectedWallet])
+    }, [connectedWallet, collectionId])
 
     useEffect(() => {
         console.log(nftContract)

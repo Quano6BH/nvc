@@ -78,18 +78,25 @@ const switchNetwork = async ({ chainId, chainName = 'Binance Smart Chain', ...ot
     //     rpcUrls: ['https://bsc-dataseed.binance.org/'],
     //     blockExplorerUrls: ['https://bscscan.com']
     // }
-    const currentChainId = await window.web3.eth.net.getId()
+    const { ethereum } = window
+    window.web3 = new Web3(ethereum);
+    await ethereum.enable();
+
+    window.web3 = new Web3(window.web3.currentProvider);
+    const web3 = window.web3;
+
+    const currentChainId = await web3.eth.net.getId()
 
     if (currentChainId !== chainId) {
         try {
-            await window.web3.currentProvider.request({
+            await web3.currentProvider.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: Web3.utils.toHex(chainId) }],
             });
         } catch (switchError) {
             if (switchError.code === 4902) {
                 try {
-                    await window.web3.currentProvider.request({
+                    await web3.currentProvider.request({
                         method: 'wallet_addEthereumChain',
                         params: [{
                             chainId: Web3.utils.toHex(chainId),

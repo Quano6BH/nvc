@@ -45,22 +45,23 @@ export default function Home() {
     setSuccessMsg('')
     try {
       const addressAmount = document.getElementById('amount').value
+      
       const lines = addressAmount.split("\n")
       const recipientsWithAmount = lines.map((line) => {
         const [recipient, amount] = line.split("=");
         return {
           recipient: String(recipient),
-          amount: amount
+          amount: parseInt(amount)
         }
       })
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
-      const amounts = recipientsWithAmount.map(item => parseInt(web3.utils.toWei(item.amount, 'ether')))
-      const stringAmounts = recipientsWithAmount.map(item => web3.utils.toWei(item.amount, 'ether'))
+      const amounts = recipientsWithAmount.map(item => item.amount)
+      const weiAmounts = recipientsWithAmount.map(item => web3.utils.toWei(String(item.amount), 'ether'))
       const reducer = (accumulator, curr) => accumulator + curr;
-      scatterContract.methods.scatterEther(recipients, stringAmounts, true).send({
+      scatterContract.methods.scatterEther(recipients, weiAmounts, true).send({
         from: address,
         gas: 300000,
-        value: amounts.reduce(reducer)
+        value: web3.utils.toWei(String(amounts.reduce(reducer)), 'ether')
       })
     } catch (err) {
       console.log(err)
