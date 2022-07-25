@@ -2,11 +2,11 @@ from database_fetch import SqlConnector
 import database_script as db
 import datetime
 
-collection_id = 3
+collection_id = 4
 month = 7
 
 
-for i in range(1, 13):
+for i in range(15, 26):
     print(i)
     # Chạy update database mỗi ngày
 
