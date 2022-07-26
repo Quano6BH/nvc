@@ -7,6 +7,7 @@ from flask_cors import CORS
 
 from flaskr.config import Config
 
+from flaskr.cache import cache
 
 
 def create_app(config=Config):
@@ -14,6 +15,7 @@ def create_app(config=Config):
 
     
     app.config.from_object(config)
+
 
     # ensure the instance folder exists
     try:
@@ -28,6 +30,8 @@ def create_app(config=Config):
 
     from flaskr.blueprints.wallet import wallet
     app.register_blueprint(wallet)
+
+    cache.init_app(app)
 
     CORS(app, allow_headers=["Content-Type", "Authorization",
          "Access-Control-Allow-Credentials"], origins="*")
