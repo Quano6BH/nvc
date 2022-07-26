@@ -78,20 +78,42 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchone()
 
-    get_collection_interest_report_query = f'''
-        SELECT Holder, InterestEarnedInMonth
-        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME}
-        WHERE SnapshotDate = '$snapshot_date' AND CollectionId = $collection_id
-        
+    get_snapshot_date_interest_principal_query = f'''
+        SELECT cu.Principal , cu.Interest
+        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd
+        INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
+        ON hbd.UpdateAppliedId = cu.Id
+        WHERE SnapshotDate = '$snapshot_date' AND hbd.CollectionId = $collection_id
+        LIMIT 1
 
     '''
-    def get_collection_interest_report(self, collection_id, snapshot_date):
+    def get_snapshot_date_interest_principal(self, collection_id, snapshot_date):
         with self.create_db_connection(self.db_config) as db_connection:
             with db_connection.cursor() as cursor:
 
                 self._execute_query(
                     cursor=cursor,
-                    query_template=self.get_collection_interest_report_query,
+                    query_template=self.get_snapshot_date_interest_principal_query,
+                    collection_id=collection_id,
+                    snapshot_date=str(snapshot_date)
+                )
+
+                return cursor.fetchone()
+
+    get_collection_monthly_interest_snapshot_query = f'''
+        SELECT Holder, SUM(InterestEarnedInMonth), SUM(HoldDaysInMonth)
+        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME}
+        WHERE SnapshotDate = '$snapshot_date' AND CollectionId = $collection_id
+        GROUP BY Holder
+
+    '''
+    def get_collection_monthly_interest_snapshot(self, collection_id, snapshot_date):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with db_connection.cursor() as cursor:
+
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_collection_monthly_interest_snapshot_query,
                     collection_id=collection_id,
                     snapshot_date=str(snapshot_date)
                 )

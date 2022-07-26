@@ -9,25 +9,40 @@ class CollectionBusinessLayer:
 
     def __init__(self, db_config):
         self.data_layer = CollectionDataLayer(db_config)
-    def get_collection_interest_report(self, collection_id, snapshot_date):
+
+    def get_collection_latest_holder_by_month(self, collection_id, snapshot_date):
         snapshot_date = snapshot_date or datetime.date.today()
-        
-        reset_date, = self.data_layer.get_collection_latest_holder_by_month(collection_id, snapshot_date)
+        reset_date, = self.data_layer.get_collection_latest_holder_by_month(
+            collection_id, snapshot_date)
+        return reset_date
+
+    def get_collection_monthly_interest_snapshot(self, collection_id, reset_date):
         # by_date_snapshot_Date = datetime.datetime.strptime(reset_date, "%Y-%m-%d")
-        data = self.data_layer.get_collection_interest_report(collection_id, reset_date- datetime.timedelta(days=1))
+        monthly_last_date = reset_date - datetime.timedelta(days=1)
         
-        result ={
-            "data":[],
-            "parsed":""
+        snapshot_date_interest_principal = self.data_layer.get_snapshot_date_interest_principal(
+            collection_id, monthly_last_date)
+
+        data = self.data_layer.get_collection_monthly_interest_snapshot(
+            collection_id, monthly_last_date)
+
+        result = {
+            "data": {
+                "interest": snapshot_date_interest_principal[1],
+                "principal": snapshot_date_interest_principal[0],
+                "monthly_snapshot": []
+            },
+            "parsed": ""
         }
         for wallet_data in data:
-            interest = "{:.2f}".format(wallet_data[1])
-            result["data"].append({
-                "wallet":wallet_data[0],
-                "interest":interest
+            # interest = "{:.2f}".format(wallet_data[1])
+            result["data"]['monthly_snapshot'].append({
+                "wallet": wallet_data[0],
+                "interest": wallet_data[1],
+                "holding_count": int(wallet_data[2])
             })
-            result["parsed"]+=f"{wallet_data[0]}={interest}\n"
-        
+            result["parsed"] += f"{wallet_data[0]}={wallet_data[1]}\n"
+
         return result
 
     def get_collection_with_updates_by_id(self, collection_id):

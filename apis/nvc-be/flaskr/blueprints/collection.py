@@ -22,8 +22,9 @@ def index(id):
     else:
         return "Not found", 404
 
+
 @collection.route("/<id>/interest-report")
-def collection_interest_report(id):
+def collection_monthly_interest_snapshot(id):
     '''
     data = {
         data:[
@@ -41,8 +42,11 @@ def collection_interest_report(id):
         snapshot_date = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    reset_date = handler.get_collection_latest_holder_by_month(
+        id, snapshot_date)
+    data = handler.get_collection_monthly_interest_snapshot(id, reset_date)
 
-    data= handler.get_collection_interest_report(id,snapshot_date)
+    return data, 200
 
 
     return data,200
