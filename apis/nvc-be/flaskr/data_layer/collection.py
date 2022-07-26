@@ -57,6 +57,49 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchall()
 
+    get_collection_latest_holder_by_month_query = f'''
+        SELECT ResetDate
+        FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME}
+        WHERE ResetDate <= '$snapshot_date' AND CollectionId = $collection_id
+        ORDER BY ResetDate DESC LIMIT 1
+
+    '''
+    def get_collection_latest_holder_by_month(self, collection_id, snapshot_date):
+
+        with self.create_db_connection(self.db_config) as db_connection:
+            with db_connection.cursor() as cursor:
+
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_collection_latest_holder_by_month_query,
+                    collection_id=collection_id,
+                    snapshot_date=str(snapshot_date)
+                )
+
+                return cursor.fetchone()
+
+    get_collection_interest_report_query = f'''
+        SELECT Holder, InterestEarnedInMonth
+        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME}
+        WHERE SnapshotDate = '$snapshot_date' AND CollectionId = $collection_id
+        
+
+    '''
+    def get_collection_interest_report(self, collection_id, snapshot_date):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with db_connection.cursor() as cursor:
+
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_collection_interest_report_query,
+                    collection_id=collection_id,
+                    snapshot_date=str(snapshot_date)
+                )
+
+                return cursor.fetchall()
+
+
+
     get_nft_current_query_template = f'''
         SELECT hbd.Holder, hbd.CollectionId, hbd.TokenId, SnapshotDate, 
                      cu.Interest, cu.Principal, hbd.UpdateAppliedId, hbd.HoldDaysinMonth 
