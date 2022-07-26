@@ -45,23 +45,28 @@ export default function Home() {
     setSuccessMsg('')
     try {
       const addressAmount = document.getElementById('amount').value
-      
       const lines = addressAmount.split("\n")
       const recipientsWithAmount = lines.map((line) => {
         const [recipient, amount] = line.split("=");
         return {
           recipient: String(recipient),
-          amount: parseInt(amount)
+          amount: amount
         }
       })
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
-      const amounts = recipientsWithAmount.map(item => item.amount)
-      const weiAmounts = recipientsWithAmount.map(item => web3.utils.toWei(String(item.amount), 'ether'))
+      const amounts = recipientsWithAmount.map(item => {
+        let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
+        return web3.utils.toWei(amount, 'ether')
+      })
+      const stringAmounts = recipientsWithAmount.map(item => {
+        let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
+        return web3.utils.toWei(amount, 'ether')
+      })
       const reducer = (accumulator, curr) => accumulator + curr;
-      scatterContract.methods.scatterEther(recipients, weiAmounts, true).send({
+      scatterContract.methods.scatterEther(recipients, stringAmounts, true).send({
         from: address,
         gas: 300000,
-        value: web3.utils.toWei(String(amounts.reduce(reducer)), 'ether')
+        value: amounts.reduce(reducer)
       })
     } catch (err) {
       console.log(err)
@@ -83,7 +88,10 @@ export default function Home() {
       })
       const tokenContractAddress = document.getElementById('contract').value
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
-      const amounts = recipientsWithAmount.map(item => web3.utils.toWei(item.amount, 'ether'))
+      const amounts = recipientsWithAmount.map(item => {
+        let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
+        return web3.utils.toWei(amount, 'ether')
+      })
       scatterContract.methods.scatterToken(tokenContractAddress, recipients, amounts, true).send({
         from: address,
         gas: 300000,
