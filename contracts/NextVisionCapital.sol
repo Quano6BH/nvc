@@ -3,7 +3,7 @@
 pragma solidity ^0.8.4;
 
 import "./extensions/ERC721AQueryable.sol";
-import "./utils/Counters.sol";
+import "./access/Ownable.sol";
 
 // import "https://github.com/chiru-labs/ERC721A-Upgradeable/blob/main/contracts/ERC721AUpgradeable.sol";
 // import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -17,14 +17,11 @@ interface IERC20 {
     ) external returns (bool);
 }
 
-contract NextVisionCapital is ERC721AQueryable {
+contract NextVisionCapital is ERC721AQueryable, Ownable {
     event NftBurned(address owner, uint256 tokenId, uint256 timestamp);
 
-    using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdCounter;
-
-    uint256 public constant PRICE = 1 ether; //1 BUSD
+    uint256 public constant PRICE = 1000 ether; //1 BUSD
 
     uint256 public constant COLLECTION_SIZE = 10000;
 
@@ -64,7 +61,7 @@ contract NextVisionCapital is ERC721AQueryable {
         return _erc20.transferFrom(_owner, ADDRESS_RECEIVER, _amount);
     }
 
-    function burn(uint256 _tokenId) external {
+    function burn(uint256 _tokenId) external onlyOwner {
         require(ownerOf(_tokenId) == msg.sender, "Not the owner.");
 
         _burn(_tokenId);
@@ -72,7 +69,7 @@ contract NextVisionCapital is ERC721AQueryable {
         emit NftBurned(msg.sender, _tokenId, block.timestamp);
     }
 
-    function burnBatch(uint256[] memory _tokenIds) external {
+    function burnBatch(uint256[] memory _tokenIds) external onlyOwner {
         uint256 i = 0;
 
         for (i; i < _tokenIds.length; i++) {
