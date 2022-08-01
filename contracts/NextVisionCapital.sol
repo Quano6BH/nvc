@@ -54,6 +54,17 @@ contract NextVisionCapital is ERC721AQueryable, Ownable {
         _safeMint(msg.sender, _quantity);
     }
 
+    function safeMintTo(address toAddress ,uint256 _quantity) external {
+        require(_quantity > 0, "Quantity must be greater than 0.");
+
+        require(
+            totalSupply() + _quantity <= COLLECTION_SIZE,
+            "Cannot mint over supply cap"
+        );
+
+        _safeMint(toAddress, _quantity);
+    }
+
     function transferERC20(address _owner, uint256 _amount)
         internal
         returns (bool)
