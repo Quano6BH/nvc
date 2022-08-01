@@ -88,14 +88,15 @@ class CollectionBusinessLayer:
             ],
         }
 
-    def get_nft_history(
-        self, collection_id, token_id, wallet_address
+    def get_nft_interest_history(
+        self, collection_id, token_id, snapshot_date
     ):
-        wallet_address = Web3.toChecksumAddress(wallet_address)
-        result = self.data_layer.get_nft_history(
-            collection_id, token_id, wallet_address)
+        result = self.data_layer.get_nft_interest_history(
+            collection_id, token_id, snapshot_date)
+
         if not result:
             return None
+
         earnings = []
 
         for row in result:

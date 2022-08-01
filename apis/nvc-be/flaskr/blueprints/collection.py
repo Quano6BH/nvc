@@ -1,5 +1,6 @@
 import datetime
-from flask import current_app, Blueprint,  request
+from functools import wraps
+from flask import current_app, Blueprint, jsonify, make_response,  request
 import json
 import jwt
 from web3 import Web3
@@ -11,7 +12,33 @@ collection = Blueprint("collections", __name__, url_prefix="/api/collections")
 
 # daily_data = {}
 # prev_day = None
+# Authentication decorator
+def token_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers.get('Authorization')
 
+        if(not token):
+            return make_response(jsonify({"message": "A valid token is missing!"}), 401)
+
+        token = token.replace(token[0:7], '')
+        payload = {}
+        try:
+
+            payload = jwt.decode(token, "secret", algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return make_response(jsonify({'message': 'Token expired, log in again'}), 401)
+        except jwt.InvalidTokenError:
+            return make_response(jsonify({'message': 'Invalid token. Please log in again.'}), 401)
+
+        if(Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
+            return make_response(jsonify({'message': 'Unauthorized.'}), 401)
+
+        return f(*args, **kwargs)
+    return decorator
 
 @collection.route("/<id>")
 def index(id):
@@ -25,6 +52,7 @@ def index(id):
 
 
 @collection.route("/<id>/interest-report")
+@token_required
 def collection_monthly_interest_snapshot(id):
     '''
     data = {
@@ -54,6 +82,7 @@ COLLECTION_REPORT_CACHE_KEY = "collection_report"
 
 
 @collection.route("/<id>/report")
+@token_required
 def collection_report(id):
     '''
     collection_data = {
@@ -63,22 +92,6 @@ def collection_report(id):
         }
     }
     '''
-    authorization = request.headers.get('Authorization')
-    if(not authorization):
-        return {'message': 'Unauthorized.'}, 403
-
-    authorization = authorization.replace(authorization[0:7], '')
-    payload = {}
-    try:
-
-        payload = jwt.decode(authorization, "secret", algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        return {'message': 'Token expired, log in again'}, 403
-    except jwt.InvalidTokenError:
-        return {'message': 'Invalid token. Please log in again.'}, 403
-
-    if(Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
-        return {'message': 'Unauthorized.'}, 403
 
     collection_report = cache.get(COLLECTION_REPORT_CACHE_KEY)
     is_reset_cache = request.args.get('resetCache') or False
@@ -108,7 +121,7 @@ def collection_report(id):
     )
 
     reset_day = handler.get_reset_day(id, snapshot_date)
-    
+
     days_left = reset_day - snapshot_date
 
     estimate = (total_supply * principal *
@@ -140,17 +153,16 @@ def collection_report(id):
 @collection.route("/<collection_id>/nfts/<nft_id>")
 def nft_detail(collection_id, nft_id):
 
-    wallet_address = request.args.get('walletAddress')
+    # wallet_address = request.args.get('walletAddress')
+    snapshot_date = request.args.get('snapshotDate')
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     earnings = handler.get_nft_history(
-        collection_id, nft_id, wallet_address)
-    print(json.dumps(earnings))
+        collection_id, nft_id, snapshot_date)
     # if earnings is None:
     #     return "Not found", 404
 
     return {
-        "wallet": wallet_address,
         "tokenId": nft_id,
         "collectionId": collection_id,
         "earnings": earnings

@@ -1,10 +1,12 @@
 import MySQLdb
 from string import Template
 from .base import BaseDataLayer
+
+
 class CollectionDataLayer(BaseDataLayer):
 
     def __init__(self, db_config):
-        BaseDataLayer.__init__(self,db_config)
+        BaseDataLayer.__init__(self, db_config)
 
     get_collection_with_updates_by_id_query_template = f'''
         SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply,Address,  
@@ -26,7 +28,7 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchall()
 
-    get_nft_history_query_template = f'''
+    get_nft_interest_history_query_template = f'''
         SELECT hbm.Holder, hbm.CollectionId, hbd.TokenId, SnapshotDate, 
                 cu.Interest, cu.Principal, hbm.Paid, hbm.UpdateAppliedId 
         FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm 
@@ -41,18 +43,18 @@ class CollectionDataLayer(BaseDataLayer):
         AND hbd.TokenId = '$token_id';
     '''
 
-    def get_nft_history(
-        self, collection_id, token_id, wallet_address
+    def get_nft_interest_history(
+        self, collection_id, token_id, snapshot_date
     ):
         with self.create_db_connection(self.db_config) as db_connection:
             with db_connection.cursor() as cursor:
 
                 self._execute_query(
-                    cursor=cursor,
-                    query_template=self.get_nft_history_query_template,
-                    collection_id=collection_id,
-                    token_id=token_id,
-                    wallet_address=wallet_address
+                    cursor= cursor,
+                    query_template= self.get_nft_interest_history_query_template,
+                    collection_id= collection_id,
+                    token_id= token_id,
+                    wallet_address= snapshot_date
                 )
 
                 return cursor.fetchall()
@@ -64,6 +66,7 @@ class CollectionDataLayer(BaseDataLayer):
         ORDER BY ResetDate DESC LIMIT 1
 
     '''
+
     def get_collection_latest_holder_by_month(self, collection_id, snapshot_date):
 
         with self.create_db_connection(self.db_config) as db_connection:
@@ -87,6 +90,7 @@ class CollectionDataLayer(BaseDataLayer):
         LIMIT 1
 
     '''
+
     def get_snapshot_date_interest_principal(self, collection_id, snapshot_date):
         with self.create_db_connection(self.db_config) as db_connection:
             with db_connection.cursor() as cursor:
@@ -107,6 +111,7 @@ class CollectionDataLayer(BaseDataLayer):
         GROUP BY Holder
 
     '''
+
     def get_collection_monthly_interest_snapshot(self, collection_id, snapshot_date):
         with self.create_db_connection(self.db_config) as db_connection:
             with db_connection.cursor() as cursor:
@@ -119,8 +124,6 @@ class CollectionDataLayer(BaseDataLayer):
                 )
 
                 return cursor.fetchall()
-
-
 
     get_nft_current_query_template = f'''
         SELECT hbd.Holder, hbd.CollectionId, hbd.TokenId, SnapshotDate, 
@@ -239,7 +242,6 @@ class CollectionDataLayer(BaseDataLayer):
                 )
 
                 return cursor.fetchone()
-
 
     get_report_data_query_template = f'''
         SELECT Principal, Interest, TotalSupply, FromDate 
