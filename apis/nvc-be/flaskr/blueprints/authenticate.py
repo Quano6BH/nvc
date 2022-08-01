@@ -18,7 +18,7 @@ def index():
     data = request.get_json()
     wallet = Web3.toChecksumAddress(data["wallet"])
     signature = data["signature"]
-    print(nonce_dict)
+    
     if wallet not in nonce_dict.keys():
         return "Error", 404
 

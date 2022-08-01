@@ -108,7 +108,7 @@ def collection_report(id):
     )
 
     reset_day = handler.get_reset_day(id, snapshot_date)
-    print(reset_day)
+    
     days_left = reset_day - snapshot_date
 
     estimate = (total_supply * principal *
