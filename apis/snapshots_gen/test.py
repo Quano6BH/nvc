@@ -4,17 +4,18 @@ import datetime
 
 # # Insert NVC.Nft
 # sql = SqlConnector()
-# sql.execute_script(db.insert_nft(3, 50))
+# sql.execute_script(db.insert_nft(1, 1000))
 
 
 month = 7
-collection_id = 4
+collection_id = 1
 
 
 # Ngày chạy update database
-day = datetime.datetime(2022, month, 1)
+day = datetime.datetime(2022, month, 25)
 # có thể dùng datetime.date.today() format theo dạng %Y-%m-%d
-last_day = day - datetime.timedelta(days=1)
+last_day = day
+# last_day = day - datetime.timedelta(days=1)
 # Ngày trước ngày chạy update database, dùng để fetch report và cập nhật số ngày holding + interest
 day = day.strftime("%Y-%m-%d")
 last_day = last_day.strftime("%Y-%m-%d")
