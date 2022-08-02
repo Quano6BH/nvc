@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS HolderByDate(
     `InterestEarnedInMonth` FLOAT NOT NULL,
     `UpdateAppliedId` INT NOT NULL,
     `Holding` BIT NOT NULL DEFAULT 0,
+    `Paid` BIT NOT NULL DEFAULT 0,
     
     PRIMARY KEY (`Id`),
     UNIQUE KEY `HolderByDate_Unique_Keys` (`Holder`,`TokenId`,`CollectionId`,`SnapshotDate`),

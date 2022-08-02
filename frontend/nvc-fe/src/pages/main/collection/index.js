@@ -1,41 +1,41 @@
 import { useContext, useEffect, useState, useMemo } from "react"
 import { GlobalContext } from "../../../contexts/GlobalContext"
 import './collection.css'
-import { getNftDetail, getNftDetailCurrent, getWallet } from "../../../apis/nvcApi";
+import { getNftDetailOfWallet, getWalletCollectionInfo } from "../../../apis/nvcApi";
 import loadingGif from '../../../assets/loading.gif'
 const Collection = ({ collectionId }) => {
-    const { connectedWallet, collection, walletInfo, setWalletInfo, nftContract } = useContext(GlobalContext);
+    const { connectedWallet, collection, walletCollectionInfo, setWalletCollectionInfo, nftContract, datetime } = useContext(GlobalContext);
     const [ownedTokenIds, setOwnedTokenIds] = useState();
     const [balance, setBalance] = useState();
     const [selectedToken, setSelectedToken] = useState(null);
     const [nftStats, setNftStats] = useState(null);
-    const [nftStatsCurrent, setNftStatsCurrent] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
-    const ipfs = "https://ikzttp.mypinata.cloud/ipfs/QmYDvPAXtiJg7s8JdRBSLWdgSphQdac8j1YuQNNxcGE1hg"
-
+    const [ipfs, setIpfs] = useState("");
+    // const ipfs = "https://wicked.mypinata.cloud/ipfs/QmTQqEGEXWncTivYaBwarAYcxadqyy6eg4PCmRfXpS8TAQ"
 
     useEffect(() => {
-        if (!selectedToken)
+        setIpfs(`https://wicked.mypinata.cloud/ipfs/${collection?.ipfs}`)
+    }, [collection?.ipfs])
+
+    useEffect(() => {
+        console.log(selectedToken, selectedToken !== 0 && !selectedToken)
+        if (selectedToken !== 0 && !selectedToken)
             return;
 
+        console.log(selectedToken)
         setDetailLoading(true);
-        setNftStatsCurrent(null);
-        getNftDetail(collectionId, selectedToken, connectedWallet)
+        getNftDetailOfWallet(collectionId, selectedToken, connectedWallet, datetime)
             .then((rs) => {
-                setNftStats(rs.data)
-                getNftDetailCurrent(collectionId, selectedToken, connectedWallet)
-                    .then((rs) => {
-                        setNftStatsCurrent(rs.data)
-                    }).finally(() => {
-
-                        setDetailLoading(false);
-                    })
-            }).catch(() => {
+                console.log(rs.data)
+                setNftStats(rs.data.data)
+            }).catch((e) => {
+                console.error(e)
+            }).finally(() => {
 
                 setDetailLoading(false);
             })
 
-    }, [selectedToken, collectionId, connectedWallet])
+    }, [selectedToken, collectionId, connectedWallet, datetime])
 
     const onTokenClicked = (tokenId) => {
         setSelectedToken(tokenId)
@@ -45,15 +45,14 @@ const Collection = ({ collectionId }) => {
         if (!connectedWallet)
             return;
 
-        getWallet(connectedWallet, collectionId).then((rs) => {
-            setWalletInfo(rs.data)
+        getWalletCollectionInfo(connectedWallet, collectionId, datetime).then((rs) => {
+            setWalletCollectionInfo(rs.data.data)
         }).catch((e) => {
-            setWalletInfo({ error: "error" })
+            setWalletCollectionInfo({ error: "error" })
         })
-    }, [connectedWallet, collectionId])
+    }, [connectedWallet, setWalletCollectionInfo, collectionId, datetime])
 
     useEffect(() => {
-        console.log(nftContract)
         if (!nftContract || !connectedWallet)
             return;
 
@@ -63,14 +62,13 @@ const Collection = ({ collectionId }) => {
                 setBalance(rs);
             }).catch(e => console.log(e))
 
-        nftContract.methods.tokensOfOwner(connectedWallet)
-            .call()
-            .then((rs) => {
-                setOwnedTokenIds(rs);
-            }).catch(e => console.log(e))
+    }, [nftContract, connectedWallet])
+
+    useEffect(() => {
+        setOwnedTokenIds(walletCollectionInfo?.nfts)
         // setOwnedTokenIds([1, 2]);
 
-    }, [nftContract, connectedWallet])
+    }, [walletCollectionInfo?.nfts])
 
     const getCollectionDuration = ({ startDate, endDate }) => {
         if (!startDate || !endDate)
@@ -110,25 +108,25 @@ const Collection = ({ collectionId }) => {
 
     return <>
         {
-            walletInfo && !walletInfo.kyc ? <div className="kyc">
+            walletCollectionInfo && !walletCollectionInfo.kyc ? <div className="kyc">
                 Your wallet need identity verification<br></br>
                 Please go to <a href="www.google.com">NVC kyc</a> to verify your identity
             </div>
                 : <></>
         }
         {
-            !walletInfo?.error
+            !walletCollectionInfo?.error
                 ?
                 <><div className="common-info">
                     <table>
                         <tbody>
                             <tr>
-                                <th>Total NFTs hold</th>
+                                <th>Total NFTs currently hold: </th>
                                 <td>{balance}</td>
                             </tr>
                             <tr>
-                                <th>Interest and principal recorded for {new Date().toLocaleString('default', { month: 'long' })}</th>
-                                <td>${walletInfo?.totalEarnInCurrentMonth ?? 0}</td>
+                                <th>Interest and principal recorded for {new Date().toLocaleString('default', { month: 'long' })}: </th>
+                                <td>${walletCollectionInfo?.totalEarnedInMonth ?? 0}</td>
                             </tr>
                             <tr>
                                 <th>Collection duration</th>
@@ -142,11 +140,11 @@ const Collection = ({ collectionId }) => {
                             <h3>Inventory</h3>
                             <div className="inventory">
                                 {
-                                    ownedTokenIds ? ownedTokenIds.map(tokenId =>
+                                    ownedTokenIds ? ownedTokenIds.map(({ tokenId, holding }) =>
                                         <div key={"own-" + tokenId} className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
-                                            <span>{tokenId}</span>
-                                            <img width={"100%"} src={`${ipfs}/${tokenId}.png`} alt={`${tokenId}.png`} />
-
+                                            <span>#{tokenId}</span>
+                                            <img width={"100%"} src={`${ipfs}`} alt={`${tokenId}.png`} />
+                                            {holding}
 
                                         </div>) : <></>
                                 }
@@ -157,7 +155,7 @@ const Collection = ({ collectionId }) => {
                             <div className={"nft-detail"}>
                                 {detailLoading ? <img src={loadingGif} style={{ position: "absolute", margin: "auto" }} alt="loading" /> : <></>}
 
-                                {selectedToken && !detailLoading ? <>
+                                {(selectedToken || selectedToken === 0) && !detailLoading ? <>
                                     <h4>Token: #{selectedToken}</h4>
                                     <table >
                                         <thead>
@@ -174,7 +172,7 @@ const Collection = ({ collectionId }) => {
                                         </tbody>
                                     </table>
 
-                                    <p>Days holding the NFT in month: {nftStatsCurrent?.holdDaysInCurrentMonth ?? 0}</p></> : ""}
+                                    <p>Days holding the NFT in month: {nftStats?.current.holdDays ?? 0}</p></> : ""}
 
                             </div>
                         </div>

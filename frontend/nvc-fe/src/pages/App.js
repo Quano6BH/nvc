@@ -1,13 +1,14 @@
-import { useEffect, useContext } from 'react';
+import { useEffect, useContext, useState } from 'react';
 import { GlobalContext } from '../contexts/GlobalContext';
 import './App.css';
 import Header from './header';
 import Main from './main';
 import { loadWeb3 } from '../contracts'
 import { getCollection } from '../apis/nvcApi'
+import DateTimePicker from 'react-datetime-picker';
 const App = () => {
-  const { setConnectedWallet, connectedWallet, setCollection } = useContext(GlobalContext);
-  const collectionId = 4;
+  const { setConnectedWallet, connectedWallet, setCollection, datetime, setDatetime } = useContext(GlobalContext);
+  const collectionId = 1;
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
@@ -22,7 +23,7 @@ const App = () => {
   useEffect(() => {
     getCollection(collectionId).then(rs => {
       // console.log(rs)
-      setCollection(rs.data)
+      setCollection(rs.data.data)
     })
   }, [collectionId])
 
@@ -32,6 +33,10 @@ const App = () => {
       <Main collectionId={collectionId} />
       <footer>
 
+        <div className='datetime-input'>
+          Date:
+          <DateTimePicker onChange={setDatetime} value={datetime} />
+        </div>
       </footer>
     </>
   );

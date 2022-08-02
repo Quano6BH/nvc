@@ -13,10 +13,12 @@ collection = Blueprint("collections", __name__, url_prefix="/api/collections")
 # daily_data = {}
 # prev_day = None
 # Authentication decorator
+
+
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
-        
+
         token = None
         if 'Authorization' in request.headers:
             token = request.headers.get('Authorization')
@@ -40,15 +42,39 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorator
 
+
 @collection.route("/<id>")
 def index(id):
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     collection = handler.get_collection_with_updates_by_id(id)
 
     if collection:
-        return collection, 200
+        return {"data": collection}, 200
     else:
         return "Not found", 404
+
+
+@collection.route("/<collection_id>/nfts/<nft_id>", methods=["GET"])
+def get_nft_interest_history(collection_id, nft_id):
+
+    # wallet_address = request.args.get('walletAddress')
+    snapshot_date = request.args.get('datetime')
+    if(not snapshot_date):
+        snapshot_date = datetime.date.today()
+
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    history = handler.get_nft_interest_history(
+        collection_id, nft_id, snapshot_date)
+    # if earnings is None:
+    #     return "Not found", 404
+
+    return {
+        "data": {
+            "tokenId": nft_id,
+            "collectionId": collection_id,
+            "history": history
+        }
+    }
 
 
 @collection.route("/<id>/interest-report")
@@ -66,13 +92,13 @@ def collection_monthly_interest_snapshot(id):
     }
     '''
 
-    snapshot_date = request.args.get('snapshotDate')
-    if(not snapshot_date):
-        snapshot_date = datetime.date.today()
+    datetime = request.args.get('datetime')
+    if(not datetime):
+        datetime = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     reset_date = handler.get_collection_latest_holder_by_month(
-        id, snapshot_date)
+        id, datetime)
     data = handler.get_collection_monthly_interest_snapshot(id, reset_date)
 
     return data, 200
@@ -107,22 +133,22 @@ def collection_report(id):
             collection_report.pop(id)
             cache.set(COLLECTION_REPORT_CACHE_KEY, collection_report)
 
-    snapshot_date = request.args.get('snapshotDate')
-    if(not snapshot_date):
-        snapshot_date = datetime.date.today()
+    datetime = request.args.get('datetime')
+    if(not datetime):
+        datetime = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    unique_holders = handler.get_unique_holder(id, snapshot_date)
+    unique_holders = handler.get_unique_holder(id, datetime)
 
-    total_pay = handler.get_total_pay(id, snapshot_date)
+    total_pay = handler.get_total_pay(id, datetime)
 
     (principal, interest, total_supply, from_date) = handler.get_report_data(
         id
     )
 
-    reset_day = handler.get_reset_day(id, snapshot_date)
+    reset_day = handler.get_reset_day(id, datetime)
 
-    days_left = reset_day - snapshot_date
+    days_left = reset_day - datetime
 
     estimate = (total_supply * principal *
                 interest / 100 / 365 * days_left.days)
@@ -150,49 +176,3 @@ def collection_report(id):
     return daily_data
 
 
-@collection.route("/<collection_id>/nfts/<nft_id>")
-def nft_detail(collection_id, nft_id):
-
-    # wallet_address = request.args.get('walletAddress')
-    snapshot_date = request.args.get('snapshotDate')
-
-    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    earnings = handler.get_nft_history(
-        collection_id, nft_id, snapshot_date)
-    # if earnings is None:
-    #     return "Not found", 404
-
-    return {
-        "tokenId": nft_id,
-        "collectionId": collection_id,
-        "earnings": earnings
-    }
-
-
-@collection.route("/<collection_id>/wallets/<wallet_address>")
-def wallet_detail(collection_id, wallet_address):
-    snapshot_date = request.args.get('snapshotDate')
-    if(not snapshot_date):
-        snapshot_date = datetime.date.today()
-
-    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    data = handler.get_wallet_nfts(
-        collection_id, wallet_address, snapshot_date)
-    return (data, 200) if data else ("404", 404)
-
-
-@collection.route("/<collection_id>/nfts/<nft_id>/current")
-def nft_detail_cur(collection_id, nft_id):
-    wallet_address = request.args.get('walletAddress')
-    snapshot_date = request.args.get('snapshotDate')
-    if(not snapshot_date):
-        snapshot_date = datetime.date.today()
-
-    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    data = handler.get_nft_current(
-        collection_id, nft_id, wallet_address, snapshot_date)
-    # if earnings is None:
-    #     return "Not found", 404
-    if(not data):
-        return "", 404
-    return data

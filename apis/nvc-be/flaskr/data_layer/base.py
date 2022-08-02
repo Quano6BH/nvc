@@ -3,13 +3,13 @@ from string import Template
 
 
 class BaseDataLayer:
-    WALLET_TABLE_NAME = "NVC.Wallet"
-    COLLECTION_TABLE_NAME = "NVC.Collection"
-    COLLECTION_UPDATE_TABLE_NAME = "NVC.CollectionUpdate"
-    NFT_TABLE_NAME = "NVC.Nft"
-    NFT_HOLDER_TABLE_NAME = "NVC.NftHolder"
-    NFT_HOLDER_BY_DATE_TABLE_NAME = "NVC.HolderByDate"
-    NFT_HOLDER_BY_MONTH_TABLE_NAME = "NVC.HolderByMonth"
+    WALLET_TABLE_NAME = "Wallet"
+    COLLECTION_TABLE_NAME = "Collection"
+    COLLECTION_UPDATE_TABLE_NAME = "CollectionUpdate"
+    NFT_TABLE_NAME = "Nft"
+    NFT_HOLDER_TABLE_NAME = "NftHolder"
+    NFT_HOLDER_BY_DATE_TABLE_NAME = "HolderByDate"
+    NFT_HOLDER_BY_MONTH_TABLE_NAME = "HolderByMonth"
 
     def __init__(self, db_config):
         self.db_config = db_config

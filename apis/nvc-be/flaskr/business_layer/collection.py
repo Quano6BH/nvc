@@ -10,21 +10,43 @@ class CollectionBusinessLayer:
     def __init__(self, db_config):
         self.data_layer = CollectionDataLayer(db_config)
 
+    def get_nft_interest_history(
+        self, collection_id, token_id, snapshot_date
+    ):
+        result = self.data_layer.get_nft_interest_history(
+            collection_id, token_id, snapshot_date)
+
+        if not result:
+            return None
+
+        history = []
+        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth) 
+        for row in result:
+            _, _, row_snapshot_date, interest, principal, updateAppliedId, interest_earned_in_month, hold_days_in_month  = row
+            history.append(
+                {
+                    "datetime": str(row_snapshot_date),
+                    "interestRate": interest,
+                    "principal": principal,
+                    "interestEarned": interest_earned_in_month,
+                    "holdDays": hold_days_in_month,
+                    "updateAppliedId": updateAppliedId,
+                }
+            )
+
+        return history
+
     def get_collection_latest_holder_by_month(self, collection_id, snapshot_date):
         snapshot_date = snapshot_date or datetime.date.today()
         reset_date, = self.data_layer.get_collection_latest_holder_by_month(
             collection_id, snapshot_date)
         return reset_date
 
-    def get_collection_monthly_interest_snapshot(self, collection_id, reset_date):
+    def get_collection_monthly_interest_snapshot(self, collection_id, datetime):
         # by_date_snapshot_Date = datetime.datetime.strptime(reset_date, "%Y-%m-%d")
-        monthly_last_date = reset_date - datetime.timedelta(days=1)
-        
-        snapshot_date_interest_principal = self.data_layer.get_snapshot_date_interest_principal(
-            collection_id, monthly_last_date)
 
         data = self.data_layer.get_collection_monthly_interest_snapshot(
-            collection_id, monthly_last_date)
+            collection_id, datetime)
 
         result = {
             "data": {
@@ -88,30 +110,6 @@ class CollectionBusinessLayer:
             ],
         }
 
-    def get_nft_interest_history(
-        self, collection_id, token_id, snapshot_date
-    ):
-        result = self.data_layer.get_nft_interest_history(
-            collection_id, token_id, snapshot_date)
-
-        if not result:
-            return None
-
-        earnings = []
-
-        for row in result:
-            _, _, _, row_snapshot_date, interest, principal, paid, updateAppliedId = row
-            earnings.append(
-                {
-                    "datetime": str(row_snapshot_date),
-                    "paid": paid == b"\x01",
-                    "interestRate": interest,
-                    "principal": principal,
-                    "updateAppliedId": updateAppliedId,
-                }
-            )
-
-        return earnings
 
     def get_nft_current(
         self, collection_id, token_id, wallet_address, snapshot_date=None
@@ -162,26 +160,6 @@ class CollectionBusinessLayer:
             "totalNftsInCurrentMonth": count_TokenId,
         }
 
-    def get_wallet_nfts(self, collection_id, wallet_address, snapshot_date=None):
-        wallet_address = Web3.toChecksumAddress(wallet_address)
-        snapshot_date = snapshot_date or datetime.date.today()
-        result = self.data_layer.get_wallet_nfts(
-            collection_id, wallet_address, snapshot_date)
-        if not result:
-            return None
-
-        totalEarnInCurrentMonth, kyc = result
-
-        if not totalEarnInCurrentMonth:
-            return None
-
-        data = {
-            "totalEarnInCurrentMonth": totalEarnInCurrentMonth,
-            "kyc": kyc == b'\x01',
-            "walletAddress": wallet_address
-        }
-
-        return data
 
     def get_unique_holder(self, collection_id, snapshot_date=None):
         snapshot_date = snapshot_date or datetime.date.today()

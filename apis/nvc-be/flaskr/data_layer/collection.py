@@ -9,7 +9,7 @@ class CollectionDataLayer(BaseDataLayer):
         BaseDataLayer.__init__(self, db_config)
 
     get_collection_with_updates_by_id_query_template = f'''
-        SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply,Address,  
+        SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address,  
         NetworkId, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id 
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c 
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
@@ -29,18 +29,22 @@ class CollectionDataLayer(BaseDataLayer):
                 return cursor.fetchall()
 
     get_nft_interest_history_query_template = f'''
-        SELECT hbm.Holder, hbm.CollectionId, hbd.TokenId, SnapshotDate, 
-                cu.Interest, cu.Principal, hbm.Paid, hbm.UpdateAppliedId 
+        SELECT MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  
+            MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
         FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm 
             INNER JOIN {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd 
-            ON hbm.CollectionId = hbd.CollectionId 
-            AND hbm.Holder = hbd.Holder 
-            AND hbm.ResetDate = hbd.SnapshotDate 
+                ON hbm.CollectionId = hbd.CollectionId 
+                AND hbm.Holder = hbd.Holder 
+                AND hbm.ResetDate = hbd.SnapshotDate 
+
             INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
-            ON cu.Id = hbm.UpdateAppliedId  
+                ON cu.Id = hbm.UpdateAppliedId  
+
         WHERE hbm.CollectionId = $collection_id
-        AND hbm.Holder = '$wallet_address' 
-        AND hbd.TokenId = '$token_id';
+        AND hbd.SnapshotDate <= '$snapshot_date' 
+        AND hbd.TokenId = '$token_id'
+
+        GROUP BY hbd.SnapshotDate
     '''
 
     def get_nft_interest_history(
@@ -54,7 +58,7 @@ class CollectionDataLayer(BaseDataLayer):
                     query_template= self.get_nft_interest_history_query_template,
                     collection_id= collection_id,
                     token_id= token_id,
-                    wallet_address= snapshot_date
+                    snapshot_date= snapshot_date
                 )
 
                 return cursor.fetchall()
@@ -105,14 +109,18 @@ class CollectionDataLayer(BaseDataLayer):
                 return cursor.fetchone()
 
     get_collection_monthly_interest_snapshot_query = f'''
-        SELECT Holder, SUM(InterestEarnedInMonth), SUM(HoldDaysInMonth)
-        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME}
-        WHERE SnapshotDate = '$snapshot_date' AND CollectionId = $collection_id
-        GROUP BY Holder
+        SELECT hbm.Holder,  SnapshotDate, cu.Interest, cu.Principal,  hbm.Paid 
+        FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm 
+                
+            INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
+				ON cu.Id = hbm.UpdateAppliedId  
+        
+        WHERE hbm.CollectionId = $collection_id
+        AND hbm.ResetDate <= '$datetime' ;
 
     '''
 
-    def get_collection_monthly_interest_snapshot(self, collection_id, snapshot_date):
+    def get_collection_monthly_interest_snapshot(self, collection_id, datetime):
         with self.create_db_connection(self.db_config) as db_connection:
             with db_connection.cursor() as cursor:
 
@@ -120,39 +128,11 @@ class CollectionDataLayer(BaseDataLayer):
                     cursor=cursor,
                     query_template=self.get_collection_monthly_interest_snapshot_query,
                     collection_id=collection_id,
-                    snapshot_date=str(snapshot_date)
+                    datetime=str(datetime)
                 )
 
                 return cursor.fetchall()
 
-    get_nft_current_query_template = f'''
-        SELECT hbd.Holder, hbd.CollectionId, hbd.TokenId, SnapshotDate, 
-                     cu.Interest, cu.Principal, hbd.UpdateAppliedId, hbd.HoldDaysinMonth 
-        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd 
-            INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
-            ON cu.Id = hbd.UpdateAppliedId  
-        WHERE hbd.CollectionId = $collection_id
-        AND hbd.Holder = '$wallet_address' 
-        AND hbd.SnapshotDate = '$snapshot_date' 
-        AND hbd.TokenId = '$token_id';
-    '''
-
-    def get_nft_current(
-        self, collection_id, token_id, wallet_address, snapshot_date
-    ):
-        with self.create_db_connection(self.db_config) as db_connection:
-            with db_connection.cursor() as cursor:
-
-                self._execute_query(
-                    cursor=cursor,
-                    query_template=self.get_nft_current_query_template,
-                    collection_id=collection_id,
-                    token_id=token_id,
-                    wallet_address=wallet_address,
-                    snapshot_date=str(snapshot_date)
-                )
-
-                return cursor.fetchone()
 
     get_nfts_summary_by_wallet_query_template = f'''
         SELECT Holder, SUM(InterestEarnedInMonth), COUNT(TokenId)
@@ -178,28 +158,6 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchone()
 
-    get_wallet_nfts_query_template = f'''
-        SELECT SUM(InterestEarnedInMonth), kyc 
-        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd 
-        INNER JOIN {BaseDataLayer.WALLET_TABLE_NAME} w ON w.Address = hbd.Holder  
-        WHERE CollectionId = $collection_id 
-        AND Holder = '$wallet_address' 
-        AND SnapshotDate = '$snapshot_date';
-    '''
-
-    def get_wallet_nfts(self, collection_id, wallet_address, snapshot_date):
-        with self.create_db_connection(self.db_config) as db_connection:
-            with db_connection.cursor() as cursor:
-
-                self._execute_query(
-                    cursor=cursor,
-                    query_template=self.get_wallet_nfts_query_template,
-                    collection_id=collection_id,
-                    wallet_address=wallet_address,
-                    snapshot_date=str(snapshot_date)
-                )
-
-                return cursor.fetchone()
 
     get_unique_holder_query_template = f'''
         SELECT count(distinct Holder) 

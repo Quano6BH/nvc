@@ -7,7 +7,7 @@ class Config(object):
         "port": 3306,
         "username": "root",
         "password": "Nvc123!@#",
-        "database": "NVC"
+        "database": "NextVisionCapital"
     }
     FLASK_APP = "flaskr"
     ADMIN_WALLETS = [Web3.toChecksumAddress(address) for address in [

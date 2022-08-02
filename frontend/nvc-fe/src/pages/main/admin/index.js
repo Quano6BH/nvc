@@ -11,7 +11,7 @@ const Admin = (params) => {
     const [loading, setLoading] = useState(true);
     const [errMessage, setErrMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
-    const { collection } = useContext(GlobalContext);
+    const { collection , datetime} = useContext(GlobalContext);
     const ref = useRef(null);
 
     useEffect(() => {
@@ -64,6 +64,11 @@ const Admin = (params) => {
         })
     }
 
+    const getCurrentCollectionUpdate = (collectionUpdates, currentDate) => {
+        const currentMonth = currentDate.getMonth() + 1
+        return collectionUpdates.filter(({ from_date }) => new Date(from_date).getMonth() + 1 === currentMonth)[0]
+    };
+
     return <>
         {
             !error && !loading ?
@@ -83,11 +88,11 @@ const Admin = (params) => {
                         </tr>
                         <tr>
                             <th>Nft value</th>
-                            <td>${collection?.updates[0].principal}</td>
+                            <td>${getCurrentCollectionUpdate(collection?.updates, datetime)?.principal}</td>
                         </tr>
                         <tr>
                             <th>Total collection value</th>
-                            <td>${collection?.updates[0].principal * collection?.totalSupply}</td>
+                            <td>${getCurrentCollectionUpdate(collection?.updates, datetime)?.principal * collection?.totalSupply}</td>
                         </tr>
                     </tbody>
                 </table>
