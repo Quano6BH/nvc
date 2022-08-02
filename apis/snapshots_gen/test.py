@@ -6,15 +6,19 @@ import datetime
 # sql = SqlConnector()
 # sql.execute_script(db.insert_nft(3, 50))
 
+
+month = 7
+collection_id = 4
+
+
 # Ngày chạy update database
-day = datetime.datetime(2022, 7, 1)
+day = datetime.datetime(2022, month, 1)
 # có thể dùng datetime.date.today() format theo dạng %Y-%m-%d
 last_day = day - datetime.timedelta(days=1)
 # Ngày trước ngày chạy update database, dùng để fetch report và cập nhật số ngày holding + interest
 day = day.strftime("%Y-%m-%d")
 last_day = last_day.strftime("%Y-%m-%d")
 
-collection_id = 3
 
 sql = SqlConnector()
 (_, principal, interest, update_applied_id) = sql.fetch_closest_update(

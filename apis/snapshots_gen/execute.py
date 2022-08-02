@@ -3,10 +3,10 @@ import database_script as db
 import datetime
 
 collection_id = 4
-month = 7
+month = 8
 
 
-for i in range(15, 26):
+for i in range(1, 2):
     print(i)
     # Chạy update database mỗi ngày
 
