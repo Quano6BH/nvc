@@ -2,11 +2,11 @@ from database_fetch import SqlConnector
 import database_script as db
 import datetime
 
-collection_id = 4
+collection_id = 1
 month = 8
 
 
-for i in range(1, 2):
+for i in range(2, 3):
     print(i)
     # Chạy update database mỗi ngày
 
@@ -25,8 +25,8 @@ for i in range(1, 2):
     wallets = [token_holder["wallet"] for token_holder in token_holders]
 
     # Execute script INSERT INTO NVC.Wallet
-    sql = SqlConnector()
-    sql.execute_script(db.insert_wallets(wallets))
+    # sql = SqlConnector()
+    # sql.execute_script(db.insert_wallets(wallets))
 
     # Fetch Principal, Interest, UpdateAppliedId theo Update mới nhất:
     sql = SqlConnector()
@@ -35,10 +35,10 @@ for i in range(1, 2):
     )
 
     # Execute script INSERT INTO NVC.NftHolder
-    sql = SqlConnector()
-    sql.execute_script(
-        db.insert_nft_holder(token_holders, collection_id, principal, interest, day)
-    )
+    # sql = SqlConnector()
+    # sql.execute_script(
+    #     db.insert_nft_holder(token_holders, collection_id, principal, interest, day)
+    # )
 
     # Fetch Report ngày trước đó (ngày hôm qua)
     sql = SqlConnector()
@@ -51,7 +51,7 @@ for i in range(1, 2):
         token_holders,
         principal * interest / 100 / 365,
         report_last_day,
-        True if i == 1 else False,
+        True if i == 26 else False,
     )
 
     # Execute script INSERT INTO NVC.HolderByDate

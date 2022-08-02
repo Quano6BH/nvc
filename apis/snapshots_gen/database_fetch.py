@@ -3,13 +3,13 @@ import json
 
 
 class SqlConnector:
-    COLLECTION = "NVC.Collection"
-    COLLECTIONUPDATE = "NVC.CollectionUpdate"
-    HOLDERBYDATE = "NVC.HolderByDate"
-    HOLDERBYMONTH = "NVC.HolderByMonth"
-    NFT = "NVC.Nft"
-    NFTHOLDER = "NftHolder"
-    WALLET = "NVC.Wallet"
+    COLLECTION = "NextVisionCapital.Collection"
+    COLLECTIONUPDATE = "NextVisionCapital.CollectionUpdate"
+    HOLDERBYDATE = "NextVisionCapital.HolderByDate"
+    HOLDERBYMONTH = "NextVisionCapital.HolderByMonth"
+    NFT = "NextVisionCapital.Nft"
+    NFTHOLDER = "NextVisionCapital.NftHolder"
+    WALLET = "NextVisionCapital.Wallet"
 
     def __init__(self):
         SERVER = {
@@ -116,7 +116,7 @@ class SqlConnector:
 
     def fetch_closest_update(self, today, collection_id):
         self.cursor.execute(
-            "SELECT FromDate,Principal,Interest,Id FROM NVC.CollectionUpdate "
+            f"SELECT FromDate,Principal,Interest,Id FROM {self.COLLECTIONUPDATE} "
             + f"WHERE (TIMESTAMPDIFF(day, FromDate, '{today}') ) < 0 AND CollectionId = {collection_id} AND Type = 'Update'"
             + "ORDER BY FromDate ASC LIMIT 1 ;"
         )
@@ -126,7 +126,7 @@ class SqlConnector:
 
     def fetch_report(self, snapshot_date, collection_id):
         self.cursor.execute(
-            f"SELECT Holder, TokenId, HoldDays, HoldDaysInMonth, InterestEarned, InterestEarnedInMonth, SnapshotDate FROM NVC.HolderByDate WHERE SnapshotDate = '{snapshot_date}' AND CollectionId = {collection_id};"
+            f"SELECT Holder, TokenId, HoldDays, HoldDaysInMonth, InterestEarned, InterestEarnedInMonth, SnapshotDate FROM NextVisionCapital.HolderByDate WHERE SnapshotDate = '{snapshot_date}' AND CollectionId = {collection_id};"
         )
         result = self.cursor.fetchall()
         self.sql.close()
