@@ -10,6 +10,38 @@ wallet = Blueprint('wallet', __name__,
                    url_prefix='/api/wallets')
 
 
+@wallet.route("/<wallet_address>/nft-detail")
+def nft_detail_cur(wallet_address):
+    nft_id = request.args.get('tokenId')
+    collection_id = request.args.get('collectionId')
+    date_time = request.args.get('datetime')
+    if(not date_time):
+        date_time = datetime.date.today()
+
+    handler = WalletBusinessLayer(current_app.config["DATABASE"])
+    history = handler.get_nft_history_of_wallet(wallet_address,
+                                                collection_id, nft_id, date_time)
+
+    current = handler.get_nft_detail_in_current_month_of_wallet(wallet_address,
+                                                                collection_id, nft_id, date_time)
+
+    # if earnings is None:
+    #     return "Not found", 404
+    # if(not history):
+    #     return "", 404
+
+    return {
+        "data": {
+            "walletAddress": wallet_address,
+            "nftId": nft_id,
+            "collectionId": collection_id,
+            "datetime": date_time,
+            "history": history,
+            "current": current
+        }
+    }
+
+
 @wallet.route('<address>', methods=["PATCH"])
 def update(address):
     '''
@@ -63,3 +95,16 @@ def index():
     handler.update_wallets_kyc(addresses, kyc)
 
     return "", 200
+
+
+@wallet.route("/<wallet_address>/collections/<collection_id>")
+def wallet_detail(wallet_address, collection_id):
+
+    date_time = request.args.get('datetime')
+    if(not date_time):
+        date_time = datetime.date.today()
+
+    handler = WalletBusinessLayer(current_app.config["DATABASE"])
+    data = handler.get_wallet_collection_info(wallet_address, collection_id, date_time)
+
+    return ({"data": data}, 200) if data else ("404", 404)

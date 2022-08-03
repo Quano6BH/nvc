@@ -10,19 +10,22 @@ export const GlobalContext = createContext({});
 export const GlobalContextProvider = ({ children }) => {
 
     const [connectedWallet, setConnectedWallet] = useState();
-    const [walletInfo, setWalletInfo] = useState(null);
+    const [walletCollectionInfo, setWalletCollectionInfo] = useState(null);
     const [collection, setCollection] = useState({});
     const [nftContract, setNftContract] = useState(null);
+    const [datetime, setDatetime] = useState(new Date());
 
     // You can choose to wrap this in a useMemo if you want to be extra careful about potential rerenders
     const globalContextStore = {
         connectedWallet,
-        walletInfo,
+        walletCollectionInfo,
         setConnectedWallet,
         collection,
         setCollection,
-        setWalletInfo,
-        nftContract
+        setWalletCollectionInfo,
+        nftContract,
+        datetime,
+        setDatetime
     }
 
     useEffect(() => {

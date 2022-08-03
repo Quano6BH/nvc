@@ -15,29 +15,26 @@ export async function getCollection(collectionId) {
   return instance.get(url);
 }
 
-export async function getCollectionReport(collectionId, jwt) {
+export async function getCollectionReport(collectionId, jwt, datetime) {
   let url = `/collections/${collectionId}/report`;
-  if (mockDate)
-    url += `?snapshotDate=${mockDate}`
+  if (datetime)
+    url += `?datetime=${datetime.toISOString().substring(0, 10)}`
   return instance.get(url, {
     headers: { "Authorization": `Bearer ${jwt}` }
   });
 }
 
-export async function getNftDetail(collectionId, tokenId, walletAddress) {
-  let url = `/collections/${collectionId}/nfts/${tokenId}?walletAddress=${walletAddress}`;
+export async function getNftDetailOfWallet(collectionId, tokenId, walletAddress, datetime) {
+  let url = `/wallets/${walletAddress}/nft-detail?tokenId=${tokenId}&collectionId=${collectionId}`;
+  if (datetime)
+    url += `&datetime=${datetime.toISOString().substring(0, 10)}`
   return instance.get(url);
 }
-export async function getNftDetailCurrent(collectionId, tokenId, walletAddress) {
-  let url = `/collections/${collectionId}/nfts/${tokenId}/current?walletAddress=${walletAddress}`;
-  if (mockDate)
-    url += `&snapshotDate=${mockDate}`
-  return instance.get(url);
-}
-export async function getWallet(walletAddress, collectionId = 3) {
-  let url = `collections/${collectionId}/wallets/${walletAddress}`;
-  if (mockDate)
-    url += `?snapshotDate=${mockDate}`
+
+export async function getWalletCollectionInfo(walletAddress, collectionId, datetime) {
+  let url = `wallets/${walletAddress}/collections/${collectionId}`;
+  if (datetime)
+    url += `?datetime=${datetime.toISOString().substring(0, 10)}`
   return instance.get(url);
 }
 

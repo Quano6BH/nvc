@@ -3,13 +3,13 @@ import json
 
 
 class SqlConnector:
-    COLLECTION = "NextVisionCapital.Collection"
-    COLLECTIONUPDATE = "NextVisionCapital.CollectionUpdate"
-    HOLDERBYDATE = "NextVisionCapital.HolderByDate"
-    HOLDERBYMONTH = "NextVisionCapital.HolderByMonth"
-    NFT = "NextVisionCapital.Nft"
-    NFTHOLDER = "NextVisionCapital.NftHolder"
-    WALLET = "NextVisionCapital.Wallet"
+    COLLECTION = "Collection"
+    COLLECTIONUPDATE = "CollectionUpdate"
+    HOLDERBYDATE = "HolderByDate"
+    HOLDERBYMONTH = "HolderByMonth"
+    NFT = "Nft"
+    NFTHOLDER = "NftHolder"
+    WALLET = "Wallet"
 
     def __init__(self):
         SERVER = {
@@ -17,7 +17,7 @@ class SqlConnector:
             "port": 3306,
             "username": "root",
             "password": "Nvc123!@#",
-            "database": "NVC",
+            "database": "NextVisionCapital",
         }
         self.sql = MySQLdb.connect(
             host=SERVER["host"],
@@ -47,7 +47,8 @@ class SqlConnector:
         columns = ", ".join(data.keys())
 
         values = ", ".join(
-            [f"'{item}'" if isinstance(item, str) else item for item in data.values()]
+            [f"'{item}'" if isinstance(
+                item, str) else item for item in data.values()]
         )
 
         query = f"INSERT INTO {table_name} ({columns}) VALUES ({values});"
@@ -105,6 +106,16 @@ class SqlConnector:
         self.cursor.execute(query)
         self.sql.commit()
         self.sql.close()
+
+    def fetch_by_script(self, script):
+        self.cursor.execute(script)
+
+        columns = self.cursor.description
+        result = [[col[0] for col in columns]]
+        for item in self.cursor.fetchall():
+            result.append(item)
+        self.sql.close()
+        return result
 
     def fetch_wallet(self, wallet):
         self.cursor.execute(
