@@ -2,7 +2,7 @@ import database_script as db
 from database_fetch import SqlConnector
 import datetime
 
-# # Insert NVC.Nft
+# Insert NVC.Nft
 # sql = SqlConnector()
 # sql.execute_script(db.insert_nft(1, 1000))
 

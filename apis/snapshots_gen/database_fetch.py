@@ -154,3 +154,11 @@ class SqlConnector:
                 }
                 continue
         return data
+
+    def check(self, wallet, nft_id):
+        self.cursor.execute(
+            f'SELECT HoldDaysInMonth, InterestEarnedInMonth FROM NextVisionCapital.HolderByDate WHERE Holder = "{wallet}" AND TokenId= {nft_id} AND SnapshotDate = "2022-05-25";'
+        )
+        result = self.cursor.fetchone()
+        self.sql.close()
+        return (result[0], result[1])
