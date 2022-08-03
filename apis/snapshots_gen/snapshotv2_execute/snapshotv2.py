@@ -23,12 +23,12 @@ def snapshot(token_id):
     try:
         result = contract.functions.ownerOf(token_id).call()
         lock.acquire()
-        with open("snapshot_NVC.txt", "a") as f:
+        with open("./snapshotv2_execute/snapshot_NVC.txt", "a") as f:
             f.write(f"{token_id}|{result}\n")
         lock.release()
     except Exception as error:
         err_lock.acquire()
-        with open("snapshot_error.txt", "a") as f:
+        with open("snapshotv2_execute/snapshot_error.txt", "a") as f:
             f.write(f"{token_id}|{str(error)}\n")
         err_lock.release()
 

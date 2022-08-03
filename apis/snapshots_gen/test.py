@@ -4,11 +4,12 @@ import datetime
 
 # Insert NVC.Nft
 # sql = SqlConnector()
-# sql.execute_script(db.insert_nft(1, 1000))
-
+# sql.execute_script(db.insert_nft(2, 1000))
+# print("done")
+# input()
 
 month = 7
-collection_id = 1
+collection_id = 2
 
 
 # Ngày chạy update database
