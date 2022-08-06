@@ -35,7 +35,7 @@ contract NextVisionCapital is ERC721AQueryable, Ownable {
     }
 
     function baseURI() public pure returns (string memory) {
-        return "ipfs://QmbksLtdi1yDJdHcPgVBc5cLyGGs5j4rMq4a4WXFFZu2XG/";
+        return "ipfs://QmfFVfvbFuikVHTG6JXda4mCuwfwKiegrxruNRCrq8D1MG/";
     }
 
     function safeMint(uint256 _quantity) external payable {

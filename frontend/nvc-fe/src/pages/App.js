@@ -8,7 +8,7 @@ import { getCollection } from '../apis/nvcApi'
 import DateTimePicker from 'react-datetime-picker';
 const App = () => {
   const { setConnectedWallet, connectedWallet, setCollection, datetime, setDatetime } = useContext(GlobalContext);
-  const collectionId = 1;
+  const collectionId = 2;
   useEffect(() => {
     loadWeb3({
       onAccountChanged: (accounts) => {
@@ -35,7 +35,7 @@ const App = () => {
 
         <div className='datetime-input'>
           Date:
-          <DateTimePicker onChange={setDatetime} value={datetime} />
+          <DateTimePicker format="dd/MM/y"  onChange={setDatetime} value={datetime} />
         </div>
       </footer>
     </>

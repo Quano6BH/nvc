@@ -93,8 +93,8 @@ const Collection = ({ collectionId }) => {
 
         const collectionUpdates = collection?.updates.filter(x => x.type === "Update");
 
-        return collectionUpdates.map(({ from_date, principal, interest, id, buyBack }) => {
-
+        return collectionUpdates.map(({ from_date, principal, interest, id, buyBack}) => {
+            const currentNftStat = nftStats?.history.filter(x => x.updateAppliedId === id)[0];
             const checkbox = Date.parse(from_date) - Date.now() > 0
             return <tr key={"table-" + id}>
                 <td> {getDateFormat(new Date(Date.parse(from_date)))}</ td>
@@ -102,9 +102,10 @@ const Collection = ({ collectionId }) => {
                 <td>{interest} %</td>
                 <td>{checkbox ? "" : "x"}</td>
                 <td>{buyBack ? "x" : ""}</td>
+                <td>{currentNftStat?.paid ? "x" : ""}</td>
             </tr >;
         });
-    }, [collection])
+    }, [collection, nftStats])
 
     return <>
         {
@@ -125,7 +126,7 @@ const Collection = ({ collectionId }) => {
                                 <td>{balance}</td>
                             </tr>
                             <tr>
-                                <th>Interest and principal recorded for {new Date().toLocaleString('default', { month: 'long' })}: </th>
+                                <th>Interest recorded for {new Date().toLocaleString('default', { month: 'long' })}: </th>
                                 <td>${walletCollectionInfo?.totalEarnedInMonth ?? 0}</td>
                             </tr>
                             <tr>
@@ -141,10 +142,10 @@ const Collection = ({ collectionId }) => {
                             <div className="inventory">
                                 {
                                     ownedTokenIds ? ownedTokenIds.map(({ tokenId, holding }) =>
-                                        <div key={"own-" + tokenId} className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
+                                        <div style={holding ? {} : { opacity: "50%" }} key={"own-" + tokenId} className={selectedToken === tokenId ? "token-selected" : ""} onClick={(e) => onTokenClicked(tokenId)}>
                                             <span>#{tokenId}</span>
                                             <img width={"100%"} src={`${ipfs}`} alt={`${tokenId}.png`} />
-                                            {holding}
+
 
                                         </div>) : <></>
                                 }
@@ -161,10 +162,11 @@ const Collection = ({ collectionId }) => {
                                         <thead>
                                             <tr>
                                                 <th>Date</th>
-                                                <th>Pricipal</th>
+                                                <th>Principal</th>
                                                 <th>Interest/Year</th>
-                                                <th>Checkbox</th>
+                                                <th>Recorded</th>
                                                 <th>Buy back</th>
+                                                <th>Paid</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -172,7 +174,9 @@ const Collection = ({ collectionId }) => {
                                         </tbody>
                                     </table>
 
-                                    <p>Days holding the NFT in month: {nftStats?.current.holdDays ?? 0}</p></> : ""}
+                                    <p>Days holding the NFT in month: {nftStats?.current.holdDays ?? 0}</p>
+                                    <p>Interest recorded in month: {nftStats?.current.interestEarned ?? 0}</p>
+                                </> : ""}
 
                             </div>
                         </div>

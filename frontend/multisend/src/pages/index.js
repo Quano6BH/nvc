@@ -56,17 +56,19 @@ export default function Home() {
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
       const amounts = recipientsWithAmount.map(item => {
         let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
-        return web3.utils.toWei(amount, 'ether')
+        return parseFloat(amount)
       })
       const stringAmounts = recipientsWithAmount.map(item => {
         let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
         return web3.utils.toWei(amount, 'ether')
       })
-      const reducer = (accumulator, curr) => accumulator + curr;
+      const reducer = (accumulator, curr) => (accumulator + curr);
+      const total = amounts.reduce(reducer)
+      console.log(total,recipientsWithAmount,stringAmounts)
       scatterContract.methods.scatterEther(recipients, stringAmounts, true).send({
         from: address,
-        gas: 300000,
-        value: amounts.reduce(reducer)
+        gas: 1000000,
+        value:  web3.utils.toWei(String(total), 'ether')
       })
     } catch (err) {
       console.log(err)
@@ -94,7 +96,7 @@ export default function Home() {
       })
       scatterContract.methods.scatterToken(tokenContractAddress, recipients, amounts, true).send({
         from: address,
-        gas: 300000,
+        gas: 1000000,
       })
     } catch (err) {
       console.log(err)

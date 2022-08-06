@@ -2,10 +2,10 @@ import { useContext } from 'react';
 import { GlobalContext } from '../../contexts/GlobalContext';
 import './announcement.css'
 const Announcement = () => {
-    const { collection, walletInfo } = useContext(GlobalContext)
+    const { collection, walletCollectionInfo } = useContext(GlobalContext)
 
     return <>
-        { walletInfo && collection?.updates
+        { walletCollectionInfo && collection?.updates
         ? collection?.updates?.filter(x=>x.type==="Annoucement").map(({ message }) => 
         <section key={"announcement-" + message[-1]}>
             {message}

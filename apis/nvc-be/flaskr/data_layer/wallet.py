@@ -79,7 +79,7 @@ class WalletDataLayer(BaseDataLayer):
     
     get_nft_history_of_wallet_query_template = f'''
         SELECT hbd.Holder, hbd.CollectionId, hbd.TokenId, SnapshotDate, cu.Interest, cu.Principal, 
-            hbd.UpdateAppliedId, hbd.HoldDaysinMonth, hbd.InterestEarnedInMonth, hbm.Paid 
+            hbd.UpdateAppliedId, hbd.HoldDaysinMonth, hbd.InterestEarnedInMonth, hbd.Paid 
         FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm 
             INNER JOIN {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd 
                 ON hbm.CollectionId = hbd.CollectionId 

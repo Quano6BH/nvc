@@ -11,14 +11,14 @@ const Admin = (params) => {
     const [loading, setLoading] = useState(true);
     const [errMessage, setErrMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
-    const { collection , datetime} = useContext(GlobalContext);
+    const { collection, datetime } = useContext(GlobalContext);
     const ref = useRef(null);
 
     useEffect(() => {
         if (!collectionId)
             return;
         setLoading(true)
-        getCollectionReport(collectionId, jwt).then(rs => {
+        getCollectionReport(collectionId, jwt, datetime).then(rs => {
             setReport(rs.data)
         }).catch(err => {
             console.log(err)
@@ -27,7 +27,7 @@ const Admin = (params) => {
             setLoading(false)
         })
 
-    }, [collectionId, jwt])
+    }, [collectionId, jwt, datetime])
 
     const validateAddresses = (addresses) => {
         for (let address of addresses) {
@@ -79,11 +79,11 @@ const Admin = (params) => {
                             <td>{report?.uniqueHolders}</td>
                         </tr>
                         <tr>
-                            <th>Interest + principal recorded for all holders</th>
+                            <th>Interest recorded for all holders</th>
                             <td>${report?.totalPay}</td>
                         </tr>
                         <tr>
-                            <th>Interest + principal have not been recorded for all holders</th>
+                            <th>Interest have not been recorded for all holders</th>
                             <td>${report?.estimate}</td>
                         </tr>
                         <tr>

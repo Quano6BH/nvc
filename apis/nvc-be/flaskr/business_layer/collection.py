@@ -135,7 +135,7 @@ class CollectionBusinessLayer:
 
         return {
             "datetime": str(data_snapshot_date),
-            "paid": False,
+            # "paid": False,
             "interestRate": interest,
             "principal": principal,
             "updateAppliedId": updateAppliedId,
@@ -161,29 +161,29 @@ class CollectionBusinessLayer:
         }
 
 
-    def get_unique_holder(self, collection_id, snapshot_date=None):
-        snapshot_date = snapshot_date or datetime.date.today()
+    def get_unique_holder(self, collection_id, date_time=None):
+        date_time = date_time or datetime.date.today()
         result = self.data_layer.get_unique_holder(
-            collection_id, snapshot_date)
+            collection_id, date_time)
 
         return result[0]
 
-    def get_total_pay(self, collection_id, snapshot_date=None):
-        snapshot_date = snapshot_date or datetime.date.today()
-        result = self.data_layer.get_total_pay(collection_id, snapshot_date)
+    def get_total_pay(self, collection_id, date_time=None):
+        date_time = date_time or datetime.date.today()
+        result = self.data_layer.get_total_pay(collection_id, date_time)
         return result[0]
 
-    def get_reset_day(self, collection_id, snapshot_date=None):
-        snapshot_date = snapshot_date or datetime.date.today()
-        result = self.data_layer.get_reset_day(collection_id, snapshot_date)
+    def get_reset_day(self, collection_id, date_time=None):
+        date_time = date_time or datetime.date.today()
+        result = self.data_layer.get_reset_day(collection_id, date_time)
         return result[0]
 
-    def get_report_data(self, collection_id, snapshot_date=None):
-        snapshot_date = snapshot_date or datetime.date.today()
-        result = self.data_layer.get_report_data(collection_id, snapshot_date)
+    def get_report_data(self, collection_id, date_time=None):
+        date_time = date_time or datetime.date.today()
+        result = self.data_layer.get_report_data(collection_id, date_time)
         return (result[0][0], result[0][1], result[0][2], result[0][3])
 
-    def get_reset_day(self, collection_id, snapshot_date=None):
-        snapshot_date = snapshot_date or datetime.date.today()
-        result = self.data_layer.get_reset_day(collection_id, snapshot_date)
+    def get_reset_day(self, collection_id, date_time=None):
+        date_time = date_time or datetime.date.today()
+        result = self.data_layer.get_reset_day(collection_id, date_time)
         return result[0]

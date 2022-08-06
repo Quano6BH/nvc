@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://64.227.70.163/api',
+  baseURL: 'http://localhost:5000/api',
   // timeout: 60000,
   // headers: {'X-Custom-Header': 'foobar'}
 });
@@ -16,9 +16,9 @@ export async function getCollection(collectionId) {
 }
 
 export async function getCollectionReport(collectionId, jwt, datetime) {
-  let url = `/collections/${collectionId}/report`;
+  let url = `/collections/${collectionId}/report?resetCache=true`;
   if (datetime)
-    url += `?datetime=${datetime.toISOString().substring(0, 10)}`
+    url += `&datetime=${datetime.toISOString().substring(0, 10)}`
   return instance.get(url, {
     headers: { "Authorization": `Bearer ${jwt}` }
   });

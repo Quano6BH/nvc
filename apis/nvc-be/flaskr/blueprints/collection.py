@@ -133,22 +133,23 @@ def collection_report(id):
             collection_report.pop(id)
             cache.set(COLLECTION_REPORT_CACHE_KEY, collection_report)
 
-    datetime = request.args.get('datetime')
-    if(not datetime):
-        datetime = datetime.date.today()
-
+    date_time = request.args.get('datetime')
+    if(not date_time):
+        date_time = datetime.date.today()
+    else:
+        date_time = datetime.datetime.strptime(date_time, '%Y-%m-%d').date()
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    unique_holders = handler.get_unique_holder(id, datetime)
+    unique_holders = handler.get_unique_holder(id, date_time)
 
-    total_pay = handler.get_total_pay(id, datetime)
+    total_pay = handler.get_total_pay(id, date_time)
 
     (principal, interest, total_supply, from_date) = handler.get_report_data(
         id
     )
 
-    reset_day = handler.get_reset_day(id, datetime)
+    reset_day = handler.get_reset_day(id, date_time)
 
-    days_left = reset_day - datetime
+    days_left = reset_day - date_time
 
     estimate = (total_supply * principal *
                 interest / 100 / 365 * days_left.days)

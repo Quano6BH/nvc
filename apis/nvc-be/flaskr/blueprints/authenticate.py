@@ -18,7 +18,7 @@ def index():
     data = request.get_json()
     wallet = Web3.toChecksumAddress(data["wallet"])
     signature = data["signature"]
-    
+
     if wallet not in nonce_dict.keys():
         return "Error", 404
 
@@ -34,7 +34,7 @@ def index():
 
     encoded_jwt = jwt.encode({
         "wallet": wallet,
-        "exp": datetime.datetime.today().timestamp() + 900,
+        "exp": datetime.datetime.today().timestamp() + 900000,
         "iat": datetime.datetime.today().timestamp()
     }, "secret", algorithm="HS256")
     return encoded_jwt, 200
