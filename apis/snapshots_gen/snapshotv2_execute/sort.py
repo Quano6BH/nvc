@@ -1,4 +1,4 @@
-with open("snapshot_NVC.txt", "r") as file:
+with open("./snapshotv2_execute/snapshot_NVC.txt", "r") as file:
     lines = file.readlines()
     lines.sort(key=lambda line: int(line.split("|")[0]))
 with open("snapshot_NVC_sorted.txt", "w") as file:

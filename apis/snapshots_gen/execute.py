@@ -6,7 +6,7 @@ collection_id = 2
 month = 8
 
 
-for i in range(3, 4):
+for i in range(13, 14):
     print(i)
     # Chạy update database mỗi ngày
 
@@ -37,7 +37,8 @@ for i in range(3, 4):
     # Execute script INSERT INTO NVC.NftHolder
     sql = SqlConnector()
     sql.execute_script(
-        db.insert_nft_holder(token_holders, collection_id, principal, interest, day)
+        db.insert_nft_holder(token_holders, collection_id,
+                             principal, interest, day)
     )
 
     # Fetch Report ngày trước đó (ngày hôm qua)

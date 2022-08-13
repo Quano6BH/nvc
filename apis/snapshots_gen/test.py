@@ -8,7 +8,7 @@ import datetime
 # print("done")
 # input()
 
-month = 7
+month = 8
 collection_id = 2
 
 
@@ -29,6 +29,7 @@ sql = SqlConnector()
 sql = SqlConnector()
 report_last_day = sql.fetch_report(last_day, collection_id)
 sql = SqlConnector()
-sql.execute_script(
-    db.insert_holder_by_month(report_last_day, collection_id, day, update_applied_id)
-)
+aaa = db.insert_holder_by_month(
+    report_last_day, collection_id, day, update_applied_id)
+print(aaa)
+sql.execute_script(aaa)

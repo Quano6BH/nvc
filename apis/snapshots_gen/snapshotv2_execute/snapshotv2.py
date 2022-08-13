@@ -22,19 +22,20 @@ def snapshot(token_id):
     time.sleep(1)
     try:
         result = contract.functions.ownerOf(token_id).call()
-        lock.acquire()
+        # lock.acquire()
         with open("./snapshotv2_execute/snapshot_NVC.txt", "a") as f:
             f.write(f"{token_id}|{result}\n")
-        lock.release()
+        # lock.release()
     except Exception as error:
-        err_lock.acquire()
+        # err_lock.acquire()
         with open("snapshotv2_execute/snapshot_error.txt", "a") as f:
             f.write(f"{token_id}|{str(error)}\n")
-        err_lock.release()
+        # err_lock.release()
 
 
-lock = Lock()
-err_lock = Lock()
-token_ids = [_ for _ in range(0, total_supply + 5)]
-pool = ThreadPool(10)
-pool.map(snapshot, token_ids)
+# lock = Lock()
+# err_lock = Lock()
+# token_ids = [_ for _ in range(0, total_supply + 5)]
+# pool = ThreadPool(10)
+# pool.map(snapshot, token_ids)
+snapshot(982)
