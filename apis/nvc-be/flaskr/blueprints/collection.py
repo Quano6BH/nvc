@@ -53,7 +53,7 @@ def index(id):
         return "Not found", 404
 
 @collection.route("/<id>")
-def index(id):
+def get_collection_by_id(id):
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     collection = handler.get_collection_with_updates_by_id(id)
 
