@@ -1,14 +1,14 @@
 import time
 import json
 import requests
-from web3 import Web3, HTTPProvider
+from web3 import Web3, HTTPProvider, WebsocketProvider
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Lock
 
-CONTRACT_ADDRESS = "0x8D5878530a76Dad92f425f784614925eD972765f"
+CONTRACT_ADDRESS = "0xF2Ccf89d5C92036A8075F6da96E1bb970969AA47"
 with open("abi.json", "r") as f:
     ape_abi = json.loads(f.read())
-rpc_ws = "https://young-little-brook.bsc-testnet.discover.quiknode.pro/"  # Node
+rpc_ws = "https://rinkeby.infura.io/v3/d5fccf7b8e244c3dbdaa6f68aff92f48"  # Node
 web3 = Web3(HTTPProvider(rpc_ws))
 contract = web3.eth.contract(
     address=web3.toChecksumAddress(CONTRACT_ADDRESS), abi=ape_abi
@@ -33,9 +33,8 @@ def snapshot(token_id):
         # err_lock.release()
 
 
-# lock = Lock()
-# err_lock = Lock()
-# token_ids = [_ for _ in range(0, total_supply + 5)]
-# pool = ThreadPool(10)
-# pool.map(snapshot, token_ids)
-snapshot(982)
+lock = Lock()
+err_lock = Lock()
+token_ids = [_ for _ in range(0, total_supply + 5)]
+pool = ThreadPool(10)
+pool.map(snapshot, token_ids)

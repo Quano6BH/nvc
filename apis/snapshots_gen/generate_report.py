@@ -117,7 +117,7 @@ def to_csv_file(data):
 
 
 collection_id = 2
-from_date = "2022-06-26"
+from_date = "2022-04-26"
 to_date = "2022-07-25"
 
 data = fetch_interest_date(
