@@ -42,6 +42,15 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorator
 
+@collection.route("/")
+def index(id):
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    collections = handler.get_collections()
+
+    if collections:
+        return {"data": collections}, 200
+    else:
+        return "Not found", 404
 
 @collection.route("/<id>")
 def index(id):

@@ -8,6 +8,23 @@ class CollectionDataLayer(BaseDataLayer):
     def __init__(self, db_config):
         BaseDataLayer.__init__(self, db_config)
 
+
+    get_collections_query_template = f'''
+        SELECT Id, Name, Description, Price
+        FROM {BaseDataLayer.COLLECTION_TABLE_NAME};
+    '''
+
+    def get_collections(self):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with db_connection.cursor() as cursor:
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_collections_query_template
+                )
+
+                return cursor.fetchall()
+
+
     get_collection_with_updates_by_id_query_template = f'''
         SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address,  
         NetworkId, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id 
@@ -54,11 +71,11 @@ class CollectionDataLayer(BaseDataLayer):
             with db_connection.cursor() as cursor:
 
                 self._execute_query(
-                    cursor= cursor,
-                    query_template= self.get_nft_interest_history_query_template,
-                    collection_id= collection_id,
-                    token_id= token_id,
-                    snapshot_date= snapshot_date
+                    cursor=cursor,
+                    query_template=self.get_nft_interest_history_query_template,
+                    collection_id=collection_id,
+                    token_id=token_id,
+                    snapshot_date=snapshot_date
                 )
 
                 return cursor.fetchall()
@@ -133,7 +150,6 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchall()
 
-
     get_nfts_summary_by_wallet_query_template = f'''
         SELECT Holder, SUM(InterestEarnedInMonth), COUNT(TokenId)
         FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} 
@@ -157,7 +173,6 @@ class CollectionDataLayer(BaseDataLayer):
                 )
 
                 return cursor.fetchone()
-
 
     get_unique_holder_query_template = f'''
         SELECT count(distinct Holder) 

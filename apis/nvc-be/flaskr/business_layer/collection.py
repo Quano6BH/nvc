@@ -10,6 +10,27 @@ class CollectionBusinessLayer:
     def __init__(self, db_config):
         self.data_layer = CollectionDataLayer(db_config)
 
+    def get_collections(self):
+        result = self.data_layer.get_collections()
+
+        if not result:
+            return None
+
+        rows=[]
+        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth) 
+        for row in result:
+            id, name, description, price  = row
+            rows.append(
+                {
+                    "id": id,
+                    "name": name,
+                    "description": description,
+                    "price": price
+                }
+            )
+
+        return rows
+
     def get_nft_interest_history(
         self, collection_id, token_id, snapshot_date
     ):
