@@ -43,7 +43,7 @@ def token_required(f):
     return decorator
 
 @collection.route("/")
-def index(id):
+def index():
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     collections = handler.get_collections()
 

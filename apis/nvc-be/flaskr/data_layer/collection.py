@@ -8,7 +8,6 @@ class CollectionDataLayer(BaseDataLayer):
     def __init__(self, db_config):
         BaseDataLayer.__init__(self, db_config)
 
-
     get_collections_query_template = f'''
         SELECT Id, Name, Description, Price
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME};
@@ -24,10 +23,9 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchall()
 
-
     get_collection_with_updates_by_id_query_template = f'''
-        SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address,  
-        NetworkId, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id 
+        SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address, Price, 
+        NetworkId, Name, Description, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id 
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c 
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
         ON  c.Id = cu.CollectionId 

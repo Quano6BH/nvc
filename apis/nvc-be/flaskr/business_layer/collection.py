@@ -99,7 +99,10 @@ class CollectionBusinessLayer:
             ipfs,
             total_supply,
             address,
+            price,
             network_id,
+            name,
+            description,
             _,
             _,
             _,
@@ -117,6 +120,9 @@ class CollectionBusinessLayer:
             "totalSupply": total_supply,
             "address": address,
             "networkId": network_id,
+            "price": price,
+            "name": name,
+            "description": description,
             "updates": [
                 {
                     "principal": principal,
@@ -127,7 +133,7 @@ class CollectionBusinessLayer:
                     "buyBack": str(buy_back)[-2] == "1",
                     "id": cu_id,
                 }
-                for _, _, _, _, _, _, _, principal, interest, from_date, type, message, buy_back, cu_id in data
+                for _, _, _, _, _, _, _, _, _, _, principal, interest, from_date, type, message, buy_back, cu_id in data
             ],
         }
 
