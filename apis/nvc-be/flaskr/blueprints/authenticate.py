@@ -1,6 +1,6 @@
 
 import datetime
-from flask import request, Blueprint , current_app
+from flask import request, Blueprint, current_app
 from eth_account.messages import encode_defunct
 from web3.auto import w3
 from web3 import Web3

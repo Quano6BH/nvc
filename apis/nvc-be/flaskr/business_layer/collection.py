@@ -16,10 +16,10 @@ class CollectionBusinessLayer:
         if not result:
             return None
 
-        rows=[]
-        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth) 
+        rows = []
+        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
         for row in result:
-            id, name, description, price  = row
+            id, name, description, price = row
             rows.append(
                 {
                     "id": id,
@@ -41,9 +41,9 @@ class CollectionBusinessLayer:
             return None
 
         history = []
-        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth) 
+        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
         for row in result:
-            _, _, row_snapshot_date, interest, principal, updateAppliedId, interest_earned_in_month, hold_days_in_month  = row
+            _, _, row_snapshot_date, interest, principal, updateAppliedId, interest_earned_in_month, hold_days_in_month = row
             history.append(
                 {
                     "datetime": str(row_snapshot_date),
@@ -137,7 +137,6 @@ class CollectionBusinessLayer:
             ],
         }
 
-
     def get_nft_current(
         self, collection_id, token_id, wallet_address, snapshot_date=None
     ):
@@ -186,7 +185,6 @@ class CollectionBusinessLayer:
             "totalEarnInCurrentMonth": sum_InterestEarnedInMonth,
             "totalNftsInCurrentMonth": count_TokenId,
         }
-
 
     def get_unique_holder(self, collection_id, date_time=None):
         date_time = date_time or datetime.date.today()
