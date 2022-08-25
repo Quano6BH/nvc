@@ -1,6 +1,7 @@
 import datetime
-import execute
+import execution.execute as ex
 import schedule
+import snapshotv2_execute.snapshotv2 as snapshot
 
 # The ID of the collection:
 collection_id = 1
@@ -27,7 +28,7 @@ def insert_nft_id(collection_id, collection_total_supply):
     """
     Run once: Create database for Nft Table
     """
-    execute.insert_nft_id(collection_id, collection_total_supply)
+    ex.insert_nft_id(collection_id, collection_total_supply)
 
 
 def insert_holder_by_date(insert_date, collection_id):
@@ -36,29 +37,29 @@ def insert_holder_by_date(insert_date, collection_id):
     prev_date_str = to_ymd_format(prev_date)
 
     # Extract token holders, return token id with corresponding holder.
-    token_holders = execute.extract_token_holders(
+    token_holders = ex.extract_token_holders(
         insert_date_str, collection_id)
 
     # Extract wallets form token_holders, for inserting database into Wallets Table.
     wallets = [token_holder["wallet"] for token_holder in token_holders]
-    execute.insert_wallets(wallets)
+    ex.insert_wallets(wallets)
 
     # Extracting principal, interest, update_applied_id from closest CollectionUpdate data.
-    (reset_date, principal, interest, update_applied_id) = execute.fetch_closest_update(
+    (reset_date, principal, interest, update_applied_id) = ex.fetch_closest_update(
         insert_date, collection_id
     )
 
     # Insert into NftHolder.
-    execute.insert_nft_holder(
+    ex.insert_nft_holder(
         token_holders, collection_id, principal, interest, insert_date_str
     )
 
     # Generate last_day_report from database, to create new day report.
-    prev_day_report = execute.fetch_report_by_date(
+    prev_day_report = ex.fetch_report_by_date(
         prev_date_str, collection_id)
 
     # Generate new day report.
-    today_report = execute.generate_new_report_by_date(
+    today_report = ex.generate_new_report_by_date(
         token_holders,
         principal * interest / 100 / 365,
         prev_day_report,
@@ -66,7 +67,7 @@ def insert_holder_by_date(insert_date, collection_id):
     )
 
     # Insert report into database, HolderByDate Table.
-    execute.insert_holder_by_date(
+    ex.insert_holder_by_date(
         today_report, collection_id, insert_date_str, update_applied_id
     )
 
@@ -79,20 +80,33 @@ def insert_holder_by_month(insert_date, collection_id):
     prev_date = get_previous_date(insert_date)
     prev_date_str = to_ymd_format(prev_date)
     # Generate last_day_report from database, to create new day report.
-    last_day_report = execute.fetch_report_by_date(
+    last_day_report = ex.fetch_report_by_date(
         prev_date_str, collection_id)
 
     # Extracting principal, interest, update_applied_id from closest CollectionUpdate data.
-    (_, _, _, update_applied_id) = execute.fetch_closest_update(
+    (_, _, _, update_applied_id) = ex.fetch_closest_update(
         insert_date_str, collection_id
     )
 
-    execute.insert_holder_by_month(
+    ex.insert_holder_by_month(
         last_day_report, collection_id, insert_date, update_applied_id
     )
 
 
-schedule.every().day.at("18:02").do(insert_holder_by_date,
+def get_collection_address(collection_id):
+    collection_address = ex.fetch_collection_address(collection_id)
+    print(collection_address[0][0])
+    return collection_address[0][0]
+
+
+def runner(insert_date, collection_id):
+    collection_address = get_collection_address(collection_id)
+    snapshot.runner(collection_address)
+    insert_holder_by_date(insert_date, collection_id)
+    print("complete")
+
+
+schedule.every().day.at("14:24").do(runner,
                                     insert_date=date, collection_id=collection_id)
 
 while True:

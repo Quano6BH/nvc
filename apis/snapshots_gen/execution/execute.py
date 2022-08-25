@@ -1,6 +1,6 @@
-from config import Config
-from sql_connector import CollectionDataLayer
-import database_script
+from execution.config import Config
+from execution.sql_connector import CollectionDataLayer
+import execution.database_script as database_script
 
 db_config = Config().DATABASE
 
@@ -10,7 +10,8 @@ def insert_wallets(wallets):
 
 
 def fetch_closest_update(date, collection_id):
-    result = CollectionDataLayer(db_config).fetch_closest_update(date, collection_id)
+    result = CollectionDataLayer(
+        db_config).fetch_closest_update(date, collection_id)
     return (result[0][0], result[0][1], result[0][2], result[0][3])
 
 
@@ -21,7 +22,8 @@ def insert_nft_holder(token_holders, collection_id, principal, interest, snapsho
 
 
 def insert_nft_id(collection_id, collection_total_supply):
-    CollectionDataLayer(db_config).insert_nft_id(collection_id, collection_total_supply)
+    CollectionDataLayer(db_config).insert_nft_id(
+        collection_id, collection_total_supply)
 
 
 def fetch_report_by_date(snapshot_date, collection_id):
@@ -56,3 +58,9 @@ def insert_holder_by_month(
     CollectionDataLayer(db_config).insert_holder_by_month(
         last_day_report, collection_id, reset_date, update_applied_id
     )
+
+
+def fetch_collection_address(collection_id):
+    result = CollectionDataLayer(
+        db_config).fetch_collection_address(collection_id)
+    return result

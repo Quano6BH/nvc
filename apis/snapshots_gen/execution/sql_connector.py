@@ -1,4 +1,4 @@
-from base_connector import BaseConnector
+from execution.base_connector import BaseConnector
 
 
 class CollectionDataLayer(BaseConnector):
@@ -43,7 +43,8 @@ class CollectionDataLayer(BaseConnector):
                 self._execute_query(
                     cursor=cursor,
                     query_template=self.insert_wallets_database_script,
-                    wallets=(",").join([f"('{wallet}')" for wallet in wallets]),
+                    wallets=(",").join(
+                        [f"('{wallet}')" for wallet in wallets]),
                 )
                 db_connection.commit()
 
@@ -176,3 +177,17 @@ class CollectionDataLayer(BaseConnector):
                     value=value,
                 )
                 db_connection.commit()
+    fetch_collection_address_query_template = f"""
+        SELECT Address FROM {COLLECTION_TABLE_NAME}
+        WHERE Id = $collection_id
+    """
+
+    def fetch_collection_address(self, collection_id):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with db_connection.cursor() as cursor:
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.fetch_collection_address_query_template,
+                    collection_id=collection_id
+                )
+                return cursor.fetchall()

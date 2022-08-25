@@ -2,7 +2,7 @@ def extract_token_holders(date, collection_id):
     month = date.split("-")[1]
     year = date.split("-")[0]
     with open(
-        f"snapshot/{collection_id}/{year}-{month}/{collection_id}_{date}.txt", "r"
+        f"./apis/snapshots_gen/snapshot/{collection_id}/{year}-{month}/{collection_id}_{date}.txt", "r"
     ) as file:
         lines = file.readlines()
     token_holders = []
