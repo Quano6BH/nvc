@@ -29,7 +29,6 @@ def snapshot(token_id):
             f.write(f"{token_id}|{result}\n")
         lock.release()
     except Exception as error:
-
         err_lock.acquire()
         with open("snapshotv2_execute/snapshot_error.txt", "a") as f:
             f.write(f"{token_id}|{str(error)}\n")
@@ -71,5 +70,6 @@ while True:
             print(a)
             print("done")
             time.sleep(300)
+            break
         except:
             continue
