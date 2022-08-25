@@ -9,7 +9,7 @@ class CollectionDataLayer(BaseDataLayer):
         BaseDataLayer.__init__(self, db_config)
 
     get_collections_query_template = f'''
-        SELECT Id, Name, Description, Price
+        SELECT Id, Name, Description, Price, Ipfs
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME};
     '''
 
