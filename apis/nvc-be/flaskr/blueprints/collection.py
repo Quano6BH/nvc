@@ -23,7 +23,7 @@ def token_required(f):
         if 'Authorization' in request.headers:
             token = request.headers.get('Authorization')
 
-        if(not token):
+        if (not token):
             return make_response(jsonify({"message": "A valid token is missing!"}), 401)
 
         token = token.replace(token[0:7], '')
@@ -36,11 +36,12 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return make_response(jsonify({'message': 'Invalid token. Please log in again.'}), 401)
 
-        if(Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
+        if (Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
             return make_response(jsonify({'message': 'Unauthorized.'}), 401)
 
         return f(*args, **kwargs)
     return decorator
+
 
 @collection.route("/")
 def index():
@@ -51,6 +52,7 @@ def index():
         return {"data": collections}, 200
     else:
         return "Not found", 404
+
 
 @collection.route("/<id>")
 def get_collection_by_id(id):
@@ -67,8 +69,8 @@ def get_collection_by_id(id):
 def get_nft_interest_history(collection_id, nft_id):
 
     # wallet_address = request.args.get('walletAddress')
-    snapshot_date = request.args.get('datetime')
-    if(not snapshot_date):
+    # snapshot_date = request.args.get('datetime')
+    if (not snapshot_date):
         snapshot_date = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
@@ -101,8 +103,8 @@ def collection_monthly_interest_snapshot(id):
     }
     '''
 
-    datetime = request.args.get('datetime')
-    if(not datetime):
+    # datetime = request.args.get('datetime')
+    if (not datetime):
         datetime = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
@@ -142,8 +144,8 @@ def collection_report(id):
             collection_report.pop(id)
             cache.set(COLLECTION_REPORT_CACHE_KEY, collection_report)
 
-    date_time = request.args.get('datetime')
-    if(not date_time):
+    # date_time = request.args.get('datetime')
+    if (not date_time):
         date_time = datetime.date.today()
     else:
         date_time = datetime.datetime.strptime(date_time, '%Y-%m-%d').date()
@@ -184,5 +186,3 @@ def collection_report(id):
 
     # prev_day = datetime.date.today()
     return daily_data
-
-

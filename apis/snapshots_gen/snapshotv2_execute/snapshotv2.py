@@ -1,9 +1,9 @@
 import time
 import json
-import requests
-from web3 import Web3, HTTPProvider, WebsocketProvider
+from web3 import Web3, HTTPProvider
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Lock
+import datetime
 
 CONTRACT_ADDRESS = "0xF2Ccf89d5C92036A8075F6da96E1bb970969AA47"
 with open("abi.json", "r") as f:
@@ -20,7 +20,9 @@ total_supply = contract.functions.totalSupply().call()
 def snapshot(token_id):
     print(token_id)
     time.sleep(1)
+
     try:
+
         result = contract.functions.ownerOf(token_id).call()
         lock.acquire()
         with open("./snapshotv2_execute/snapshot_NVC.txt", "a") as f:
@@ -31,6 +33,7 @@ def snapshot(token_id):
         with open("snapshotv2_execute/snapshot_error.txt", "a") as f:
             f.write(f"{token_id}|{str(error)}\n")
         err_lock.release()
+        raise Exception
 
 
 def sort(total_supply):
@@ -48,11 +51,25 @@ def sort(total_supply):
     return f"missing total: {count}"
 
 
-lock = Lock()
-err_lock = Lock()
-token_ids = [_ for _ in range(0, total_supply + 5)]
-pool = ThreadPool(10)
-pool.map(snapshot, token_ids)
+while True:
 
-a = sort(total_supply)
-print(a)
+    current_time = datetime.datetime.now().hour
+    if current_time == 21:
+
+        try:
+            with open("./snapshotv2_execute/snapshot_NVC.txt", "w") as f:
+                f.write("")
+            with open("./snapshotv2_execute/snapshot_error.txt", "w") as f:
+                f.write("")
+            lock = Lock()
+            err_lock = Lock()
+            token_ids = [_ for _ in range(0, total_supply)]
+            pool = ThreadPool(10)
+            pool.map(snapshot, token_ids)
+            a = sort(total_supply)
+            print(a)
+            print("done")
+            time.sleep(300)
+            break
+        except:
+            continue

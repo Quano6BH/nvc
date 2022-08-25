@@ -197,9 +197,9 @@ class SqlConnector:
         }
 
     def get_nft_current(
-        self, collection_id, token_id, wallet_address, snapshot_date
+        self, collection_id, token_id, wallet_address, snapshot_date=None
     ):
-
+        snapshot_date = snapshot_date or datetime.date.today()
         with self.connection.cursor() as cursor:
 
             self._execute_query(
@@ -239,8 +239,9 @@ class SqlConnector:
     '''
 
     def get_nfts_summary_by_wallet(
-        self, collection_id, wallet_address, snapshot_date
+        self, collection_id, wallet_address, snapshot_date=None
     ):
+        snapshot_date = snapshot_date or datetime.date.today()
         with self.connection.cursor() as cursor:
 
             self._execute_query(
@@ -282,7 +283,8 @@ class SqlConnector:
 
         return data
 
-    def get_wallet_nfts(self, collection_id, wallet_address, snapshot_date):
+    def get_wallet_nfts(self, collection_id, wallet_address, snapshot_date=None):
+        snapshot_date = snapshot_date or datetime.date.today()
         with self.connection.cursor() as cursor:
 
             self._execute_query(
@@ -359,4 +361,3 @@ class SqlConnector:
         result = self.cursor.fetchone()
         self.connection.close()
         return result[0]
-
