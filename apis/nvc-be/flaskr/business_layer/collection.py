@@ -19,12 +19,13 @@ class CollectionBusinessLayer:
         rows=[]
         #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth) 
         for row in result:
-            id, name, description, price  = row
+            id, name, description, price, ipfs  = row
             rows.append(
                 {
                     "id": id,
                     "name": name,
                     "description": description,
+                    "ipfs": ipfs,
                     "price": price
                 }
             )
