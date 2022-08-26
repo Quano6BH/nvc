@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `Collection` (
     `Name` nvarchar(256),
     `EndDate` DATE NOT NULL,
     `Ipfs` nvarchar(256) NOT NULL,
+    `Description` nvarchar(512) NOT NULL,
     `Price` FLOAT NOT NULL,
     `TotalSupply` INT NOT NULL,
     `Address` varchar(128) NOT NULL,
