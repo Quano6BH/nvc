@@ -22,8 +22,8 @@ contract NextVisionCapital is ERC721AQueryable, Ownable {
 
     uint256 public constant COLLECTION_SIZE = 1000;
 
-    string public uri = "ipfs://QmU5SgQHbAa4zHKrtCFME7jTZVwHXNgB1TCbZD1gVCLVY7";
-    constructor() ERC721A("Next Vision Capital", "NVC") {
+    string public uri = "ipfs://QmNuJqQLLa2iqZNEXpdHBy9bWTS1KzLdm1rxTFDDi54YQu";
+    constructor() ERC721A("NextVisionCapital Collection", "NVC") {
     }
 
 //uri
@@ -33,6 +33,21 @@ contract NextVisionCapital is ERC721AQueryable, Ownable {
 
     function changeBaseURI(string memory newBaseURI) external onlyOwner{
         uri = newBaseURI;
+    }
+
+     function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+        string memory baseURI = _baseURI();
+        return
+            bytes(baseURI).length != 0
+                ? string(abi.encodePacked(baseURI, ""))
+                : "";
     }
 
     function safeMintTo(address toAddress ,uint256 _quantity) external onlyOwner{
