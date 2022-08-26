@@ -44,18 +44,14 @@ def index():
 def requestAuthenticate():
     data = request.get_json()
     wallet = Web3.toChecksumAddress(data["wallet"])
-    # collection_id = request.args.get('signature')
-    # collection_id = request.args.get('nonce')
     if wallet not in current_app.config["ADMIN_WALLETS"]:
         return {
             "message": "",
             "user": True
         }
-# ['0x811a7c9334966401C22B79a55B6aCE749004D543']
-# 0x811a7c9334966401c22b79a55b6ace749004d543
+
     nonce = uuid.uuid4().hex
     nonce_dict[Web3.toChecksumAddress(wallet)] = nonce
-    # 'b46290528cd949498ce4cc86ca854173'
 
     return {
         "message": MESSAGE_TEMPLATE.format(wallet=wallet, nonce=nonce),

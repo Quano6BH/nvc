@@ -64,31 +64,6 @@ class CollectionBusinessLayer:
             collection_id, snapshot_date)
         return reset_date
 
-    def get_collection_monthly_interest_snapshot(self, collection_id, datetime):
-        # by_date_snapshot_Date = datetime.datetime.strptime(reset_date, "%Y-%m-%d")
-
-        data = self.data_layer.get_collection_monthly_interest_snapshot(
-            collection_id, datetime)
-
-        result = {
-            "data": {
-                "interest": snapshot_date_interest_principal[1],
-                "principal": snapshot_date_interest_principal[0],
-                "monthly_snapshot": []
-            },
-            "parsed": ""
-        }
-        for wallet_data in data:
-            # interest = "{:.2f}".format(wallet_data[1])
-            result["data"]['monthly_snapshot'].append({
-                "wallet": wallet_data[0],
-                "interest": wallet_data[1],
-                "holding_count": int(wallet_data[2])
-            })
-            result["parsed"] += f"{wallet_data[0]}={wallet_data[1]}\n"
-
-        return result
-
     def get_collection_with_updates_by_id(self, collection_id):
         data = self.data_layer.get_collection_with_updates_by_id(collection_id)
         if not data:
