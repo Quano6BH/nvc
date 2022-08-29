@@ -6,7 +6,7 @@ from multiprocessing import Lock
 import datetime
 import requests
 
-collection_id = 1
+
 date = str(datetime.date.today())
 year = date.split("-")[0]
 month = date.split("-")[1]
@@ -107,7 +107,7 @@ def on_retry_failed():
     pass
 
 
-def runner(collection_address):
+def runner(collection_id, collection_address):
     contract = get_contract(collection_address)
     # total_supply = contract.functions.totalSupply().call()
     total_supply = get_total(collection_address)
