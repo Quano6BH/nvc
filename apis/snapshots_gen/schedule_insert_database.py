@@ -4,9 +4,9 @@ import schedule
 import snapshotv2_execute.snapshotv2 as snapshot
 
 # The ID of the collection:
-collection_id = 1
+collection_id = 2
 
-collection_total_supply = 1000
+collection_total_supply = 560
 
 reset_date = 26
 
@@ -106,8 +106,10 @@ def runner(insert_date, collection_id):
     print("complete")
 
 
-schedule.every().day.at("14:24").do(runner,
+schedule.every().day.at("17:49").do(runner,
                                     insert_date=date, collection_id=collection_id)
 
 while True:
     schedule.run_pending()
+
+# insert_nft_id(collection_id, collection_total_supply)

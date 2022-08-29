@@ -106,8 +106,8 @@ export default function Home() {
       })
       const tokenContractAddress = document.getElementById('contract').value
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
-      const amounts = recipientsWithAmount.map(mapAmount)
-      scatterContract.methods.scatterTokens(tokenContractAddress, recipients, amounts, true).send({
+      const stringAmounts = recipientsWithAmount.map(mapStringAmount)
+      scatterContract.methods.scatterTokens(tokenContractAddress, recipients, stringAmounts, true).send({
         from: address,
         gas: 1000000,
       })
