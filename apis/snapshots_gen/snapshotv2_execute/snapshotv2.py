@@ -4,8 +4,9 @@ from web3 import Web3, HTTPProvider
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Lock
 import datetime
+import requests
 
-collection_id = 1
+
 date = str(datetime.date.today())
 year = date.split("-")[0]
 month = date.split("-")[1]
@@ -17,12 +18,42 @@ snapshot_file_error = "./apis/snapshots_gen/snapshotv2_execute/snapshot_error.tx
 
 with open("./apis/snapshots_gen/snapshotv2_execute/abi.json", "r") as f:
     ape_abi = json.loads(f.read())
-rpc_ws = "https://rinkeby.infura.io/v3/d5fccf7b8e244c3dbdaa6f68aff92f48"  # Node
+rpc_ws = "https://zdjaypaos4ff.usemoralis.com:2053/server"  # Node
 web3 = Web3(HTTPProvider(rpc_ws))
 
 
 lock = Lock()
 err_lock = Lock()
+
+
+def get_total(collection_address):
+
+    url = f"https://deep-index.moralis.io/api/v2/nft/{collection_address}?chain=bsc&format=decimal"
+
+    headers = {
+        "Accept": "application/json",
+        "X-API-Key": "BcTVplgprvuYp6NYBWDDwT3PjKHo7jXnyO45wILPRmzuIXXgxm9ImVsLpot2Qnxm"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    # print(response.text)
+    return json.loads(response.text)['total']
+
+
+def get_owner(collection_address, token_id):
+
+    url = f"https://deep-index.moralis.io/api/v2/nft/{collection_address}/{token_id}/owners?chain=bsc&format=decimal"
+
+    headers = {
+        "Accept": "application/json",
+        "X-API-Key": "BcTVplgprvuYp6NYBWDDwT3PjKHo7jXnyO45wILPRmzuIXXgxm9ImVsLpot2Qnxm"
+    }
+
+    response = requests.get(url, headers=headers)
+    print(response.text)
+    print(json.loads(response.text)['result'][0]['owner_of'])
+    return json.loads(response.text)['result'][0]['owner_of']
 
 
 def get_contract(collection_address):
@@ -36,9 +67,11 @@ def snapshot(data_tuple):
     (token_id, collection_address) = data_tuple
     contract = get_contract(collection_address)
     print(token_id)
-    time.sleep(1)
+    time.sleep(5)
     try:
-        result = contract.functions.ownerOf(token_id).call()
+        # result = contract.functions.ownerOf(token_id).call()
+        result = get_owner(collection_address, token_id)
+        time.sleep(5)
         lock.acquire()
         with open(snapshot_file, "a") as f:
             f.write(f"{token_id}|{result}\n")
@@ -74,9 +107,10 @@ def on_retry_failed():
     pass
 
 
-def runner(collection_address):
+def runner(collection_id, collection_address):
     contract = get_contract(collection_address)
-    total_supply = contract.functions.totalSupply().call()
+    # total_supply = contract.functions.totalSupply().call()
+    total_supply = get_total(collection_address)
 
     with open(snapshot_file, "w") as f:
         f.write("")
@@ -84,7 +118,7 @@ def runner(collection_address):
         f.write("")
 
     datas = [(id, collection_address)for id in range(0, total_supply)]
-    pool = ThreadPool(10)
+    pool = ThreadPool(1)
     pool.map(snapshot, datas)
     sort()
     missing_token_ids = count_error(total_supply)

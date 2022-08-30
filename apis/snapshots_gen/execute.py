@@ -6,7 +6,7 @@ collection_id = 2
 month = 8
 
 
-for i in range(14, 19):
+for i in range(26, 28):
     print(i)
     # Chạy update database mỗi ngày
 

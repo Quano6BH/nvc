@@ -20,41 +20,37 @@ interface IERC20 {
 contract NextVisionCapital is ERC721AQueryable, Ownable {
     event NftBurned(address owner, uint256 tokenId, uint256 timestamp);
 
+    uint256 public constant COLLECTION_SIZE = 1000;
 
-    uint256 public constant PRICE = 1000 ether; //1 BUSD
-
-    uint256 public constant COLLECTION_SIZE = 10000;
-
-    IERC20 public immutable _erc20;
-
-    address public constant ADDRESS_RECEIVER =
-        0xE515BA407b97B053F89c4eecb8886F4C6101d4A3;
-
-    constructor(IERC20 erc20_) ERC721A("Next Vision Capital", "NVC") {
-        _erc20 = erc20_;
+    string public uri = "ipfs://QmNuJqQLLa2iqZNEXpdHBy9bWTS1KzLdm1rxTFDDi54YQu";
+    constructor() ERC721A("NextVisionCapital Collection", "NVC") {
     }
 
-    function baseURI() public pure returns (string memory) {
-        return "ipfs://QmfFVfvbFuikVHTG6JXda4mCuwfwKiegrxruNRCrq8D1MG/";
+//uri
+    function _baseURI() internal view override returns (string memory) {
+        return uri;
     }
 
-    function safeMint(uint256 _quantity) external payable {
-        require(_quantity > 0, "Quantity must be greater than 0.");
-
-        require(
-            totalSupply() + _quantity <= COLLECTION_SIZE,
-            "Cannot mint over supply cap"
-        );
-
-        require(
-            transferERC20(msg.sender, PRICE * _quantity),
-            "Fail to transfer token."
-        );
-
-        _safeMint(msg.sender, _quantity);
+    function changeBaseURI(string memory newBaseURI) external onlyOwner{
+        uri = newBaseURI;
     }
 
-    function safeMintTo(address toAddress ,uint256 _quantity) external {
+     function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+        string memory baseURI = _baseURI();
+        return
+            bytes(baseURI).length != 0
+                ? string(abi.encodePacked(baseURI, ""))
+                : "";
+    }
+
+    function safeMintTo(address toAddress ,uint256 _quantity) external onlyOwner{
         require(_quantity > 0, "Quantity must be greater than 0.");
 
         require(
@@ -65,12 +61,6 @@ contract NextVisionCapital is ERC721AQueryable, Ownable {
         _safeMint(toAddress, _quantity);
     }
 
-    function transferERC20(address _owner, uint256 _amount)
-        internal
-        returns (bool)
-    {
-        return _erc20.transferFrom(_owner, ADDRESS_RECEIVER, _amount);
-    }
 
     function burn(uint256 _tokenId) external onlyOwner {
         require(ownerOf(_tokenId) == msg.sender, "Not the owner.");

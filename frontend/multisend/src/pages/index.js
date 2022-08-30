@@ -39,6 +39,28 @@ export default function Home() {
       setError(err.message)
     }
   }
+  const mapAmount = (item) => {
+    if ((item.amount).includes(".") == true) {
+      let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0, 18)
+      return parseFloat(amount)
+    }
+    else {
+      let amount = item.amount
+      return parseFloat(amount)
+    }
+
+  }
+
+  const mapStringAmount = (item => {
+    if ((item.amount).includes(".") == true) {
+      let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0, 18)
+      return web3.utils.toWei(amount, 'ether')
+    }
+    else {
+      let amount = item.amount
+      return web3.utils.toWei(amount, 'ether')
+    }
+  })
 
   const sendEther = async () => {
     setError('')
@@ -54,21 +76,15 @@ export default function Home() {
         }
       })
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
-      const amounts = recipientsWithAmount.map(item => {
-        let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
-        return parseFloat(amount)
-      })
-      const stringAmounts = recipientsWithAmount.map(item => {
-        let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
-        return web3.utils.toWei(amount, 'ether')
-      })
+      const amounts = recipientsWithAmount.map(mapAmount)
+      const stringAmounts = recipientsWithAmount.map(mapStringAmount)
       const reducer = (accumulator, curr) => (accumulator + curr);
       const total = amounts.reduce(reducer)
-      console.log(total,recipientsWithAmount,stringAmounts)
-      scatterContract.methods.scatterEther(recipients, stringAmounts, true).send({
+      console.log(total, recipientsWithAmount, stringAmounts)
+      scatterContract.methods.scatterEthers(recipients, stringAmounts, true).send({
         from: address,
         gas: 1000000,
-        value:  web3.utils.toWei(String(total), 'ether')
+        value: web3.utils.toWei(String(total), 'ether')
       })
     } catch (err) {
       console.log(err)
@@ -90,11 +106,8 @@ export default function Home() {
       })
       const tokenContractAddress = document.getElementById('contract').value
       const recipients = recipientsWithAmount.map(item => String(item.recipient))
-      const amounts = recipientsWithAmount.map(item => {
-        let amount = item.amount.split(".")[0] + "." + item.amount.split(".")[1].slice(0,18)
-        return web3.utils.toWei(amount, 'ether')
-      })
-      scatterContract.methods.scatterToken(tokenContractAddress, recipients, amounts, true).send({
+      const stringAmounts = recipientsWithAmount.map(mapStringAmount)
+      scatterContract.methods.scatterTokens(tokenContractAddress, recipients, stringAmounts, true).send({
         from: address,
         gas: 1000000,
       })
@@ -232,39 +245,39 @@ export default function Home() {
               <div className="column is-two-thirds">
                 <section className="mt-7">
                   <div className="form-check" onChange={changeSendOption.bind(this)}>
-                    <input className="form-check-input" type="radio" name="sendOption" id="ether" value="ether"></input>Send ether<br/>
+                    <input className="form-check-input" type="radio" name="sendOption" id="ether" value="ether"></input>Send ether<br />
                     <input className="form-check-input" type="radio" name="sendOption" id="token" value="token"></input>Send token
                   </div>
                 </section>
                 {sendOption == "token" ?
-                <>
-                <section className="mt-7" >
-                  <p>Token contract</p>
-                  <div style={{ display: "flex" }}>
-                    <input id="contract" className="form-control" type="text" style={{ width: "60%", height: "50%" }}></input>
-                    <button id="btnLock" onClick={modifyTokenContractInput} className="button is-primary is-light" style={{ marginLeft: "0.3em" }}>Lock</button>
-                  </div>
-                </section>
-                <section className="mt-7">
-                  <button onClick={approveToken} className="button is-primary is-large is-light mt-3">Approve</button>
-                </section>
-                <section className="mt-7">
-                  <p id="txtBalance">Balance: {tokenBalance}</p>
-                  <p id="txtApprovedAmount">Approved amount: {approvedAmount}</p>
-                </section>
-                <section>
-                  <div className="container has-text-danger mt-6">
-                    <p>{error}</p>
-                  </div>
-                </section>
-                <section>
-                  <div className="container has-text-success mt-6">
-                    <p>{successMsg}</p>
-                  </div>
-                </section>
-                </>
-                : ""}
-                
+                  <>
+                    <section className="mt-7" >
+                      <p>Token contract</p>
+                      <div style={{ display: "flex" }}>
+                        <input id="contract" className="form-control" type="text" style={{ width: "60%", height: "50%" }}></input>
+                        <button id="btnLock" onClick={modifyTokenContractInput} className="button is-primary is-light" style={{ marginLeft: "0.3em" }}>Lock</button>
+                      </div>
+                    </section>
+                    <section className="mt-7">
+                      <button onClick={approveToken} className="button is-primary is-large is-light mt-3">Approve</button>
+                    </section>
+                    <section className="mt-7">
+                      <p id="txtBalance">Balance: {tokenBalance}</p>
+                      <p id="txtApprovedAmount">Approved amount: {approvedAmount}</p>
+                    </section>
+                    <section>
+                      <div className="container has-text-danger mt-6">
+                        <p>{error}</p>
+                      </div>
+                    </section>
+                    <section>
+                      <div className="container has-text-success mt-6">
+                        <p>{successMsg}</p>
+                      </div>
+                    </section>
+                  </>
+                  : ""}
+
               </div>
             </div>
           </section>
@@ -277,8 +290,8 @@ export default function Home() {
                   <p>Format: address=amount</p>
                   <textarea id="amount" className="form-control" type="text" placeholder='0x609e505827cbaBf618A08C58C3a36589888F18BA=0.5&#10;0x609e505827cbaBf618A08C58C3a36589888F18BA=5&#10;0x609e505827cbaBf618A08C58C3a36589888F18BA=0.3' rows="10" cols="100" style={{ fontSize: "20px", paddingLeft: "0.3em" }}></textarea><br />
                   {sendOption == "token" ?
-                  <button onClick={sendToken} className="button is-primary is-large is-light mt-3">Send Token</button>
-                  : <button onClick={sendEther} className="button is-primary is-large is-light mt-3">Send Ether</button>}
+                    <button onClick={sendToken} className="button is-primary is-large is-light mt-3">Send Token</button>
+                    : <button onClick={sendEther} className="button is-primary is-large is-light mt-3">Send Ether</button>}
                 </section>
               </div>
             </div>

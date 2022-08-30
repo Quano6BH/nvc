@@ -4,5 +4,5 @@ class Config(object):
         "port": 3306,
         "username": "root",
         "password": "Nvc123!@#",
-        "database": "BKTestZone",
+        "database": "NextVisionCapital",
     }
