@@ -13,10 +13,10 @@ month = date.split("-")[1]
 day = date.split("-")[2]
 
 
-snapshot_file = "./apis/snapshots_gen/snapshotv2_execute/snapshot_NVC.txt"
-snapshot_file_error = "./apis/snapshots_gen/snapshotv2_execute/snapshot_error.txt"
+snapshot_file = "./snapshotv2_execute/snapshot_NVC.txt"
+snapshot_file_error = "./snapshotv2_execute/snapshot_error.txt"
 
-with open("./apis/snapshots_gen/snapshotv2_execute/abi.json", "r") as f:
+with open("./snapshotv2_execute/abi.json", "r") as f:
     ape_abi = json.loads(f.read())
 rpc_ws = "https://zdjaypaos4ff.usemoralis.com:2053/server"  # Node
 web3 = Web3(HTTPProvider(rpc_ws))
@@ -67,11 +67,11 @@ def snapshot(data_tuple):
     (token_id, collection_address) = data_tuple
     contract = get_contract(collection_address)
     print(token_id)
-    time.sleep(5)
+    time.sleep(2)
     try:
         # result = contract.functions.ownerOf(token_id).call()
         result = get_owner(collection_address, token_id)
-        time.sleep(5)
+        time.sleep(2)
         lock.acquire()
         with open(snapshot_file, "a") as f:
             f.write(f"{token_id}|{result}\n")
@@ -131,5 +131,5 @@ def runner(collection_id, collection_address):
             on_retry_failed()
     with open(snapshot_file, "r") as f:
         success_snapshots = f.read()
-    with open(f"./apis/snapshots_gen/snapshot/{collection_id}/{year}-{month}/{collection_id}_{year}-{month}-{day}.txt", "w")as file:
+    with open(f"./snapshot/{collection_id}/{year}-{month}/{collection_id}_{year}-{month}-{day}.txt", "w")as file:
         file.write(success_snapshots)

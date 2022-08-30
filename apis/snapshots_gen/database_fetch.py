@@ -13,7 +13,7 @@ class SqlConnector:
 
     def __init__(self):
         SERVER = {
-            "host": "34.87.174.70",
+            "host": "34.124.157.207",
             "port": 3306,
             "username": "root",
             "password": "Nvc123!@#",
@@ -36,6 +36,7 @@ class SqlConnector:
         self.cursor.execute(script)
         self.sql.commit()
         self.sql.close()
+        print(script)
 
     def fetch_table(self, table_name):
         self.cursor.execute(f"SELECT * FROM {table_name};")
@@ -47,7 +48,8 @@ class SqlConnector:
         columns = ", ".join(data.keys())
 
         values = ", ".join(
-            [f"'{item}'" if isinstance(item, str) else item for item in data.values()]
+            [f"'{item}'" if isinstance(
+                item, str) else item for item in data.values()]
         )
 
         query = f"INSERT INTO {table_name} ({columns}) VALUES ({values});"
