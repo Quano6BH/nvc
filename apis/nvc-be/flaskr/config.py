@@ -3,11 +3,11 @@ from web3 import Web3
 
 class Config(object):
     DATABASE = {
-        "host": "34.87.174.70",
-        "port": 3306,
-        "username": "root",
-        "password": "Nvc123!@#",
-        "database": "NextVisionCapital"
+        "host": "",
+        "port": 0,
+        "username": "",
+        "password": "",
+        "database": ""
     }
     FLASK_APP = "flaskr"
     ADMIN_WALLETS = [Web3.toChecksumAddress(address) for address in [
