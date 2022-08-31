@@ -9,7 +9,7 @@ class CollectionDataLayer(BaseDataLayer):
         BaseDataLayer.__init__(self, db_config)
 
     get_collection_with_updates_by_id_query_template = f'''
-        SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address,  
+        SELECT c.Id, Name, Price, StartDate, EndDate, Ipfs, TotalSupply, Address,  
         NetworkId, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id 
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c 
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
