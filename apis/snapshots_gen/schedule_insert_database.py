@@ -99,15 +99,16 @@ def get_collection_address(collection_id):
     return collection_address[0][0]
 
 
-def runner(insert_date, collection_id):
+def runner(collection_id):
+    date = datetime.datetime.today()
     collection_address = get_collection_address(collection_id)
     snapshot.runner(collection_id, collection_address)
-    insert_holder_by_date(insert_date, collection_id)
+    insert_holder_by_date(date, collection_id)
     print("complete")
 
 
-schedule.every().day.at("10:00").do(runner,
-                                    insert_date=date, collection_id=collection_id)
+schedule.every().day.at("10:48").do(runner,
+                                    collection_id=collection_id)
 
 while True:
     schedule.run_pending()
