@@ -85,12 +85,12 @@ class WalletBusinessLayer:
             "interestEarned": interest_earned_in_month,
         }
 
-    def get_wallet_collection_info(self, wallet_address, collection_id, datetime):
+    def get_wallet_collection_info(self, wallet_address, collection_id, date_time):
         wallet_address = Web3.toChecksumAddress(wallet_address)
 
-        datetime = datetime or datetime.date.today()
+        date_time = date_time or datetime.date.today()
         rows = self.data_layer.get_wallet_collection_info(
-            wallet_address, collection_id, datetime)
+            wallet_address, collection_id, date_time)
         if not rows:
             return None
 

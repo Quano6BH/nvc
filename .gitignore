@@ -8,3 +8,5 @@ typechain
 /cache
 artifacts
 bin
+
+/snapshot_gen/snapshot

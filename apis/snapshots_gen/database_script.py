@@ -32,7 +32,7 @@ def insert_nft_holder(token_holders, collection_id, principal, interest, snapsho
         token_id = row["token_id"]
         wallet = row["wallet"]
         script += f"({token_id},{collection_id},'{wallet}',{principal}, {interest}, '{snapshot_date}'),\n"
-    script = script[0 : len(script) - 2] + ";"
+    script = script[0: len(script) - 2] + ";"
     return script
 
 
@@ -55,7 +55,7 @@ def insert_holder_by_date(report, collection_id, snapshot_day, update_applied_id
 
 
 def insert_holder_by_month(report, collection_id, reset_date, update_applied_id):
-    script = f"INSERT INTO {HOLDERBYMONTH} (Holder, CollectionId, ResetDate, TotalNFTs, InterestEarned, UpdateAppliedId) VALUES"
+    script = f"INSERT INTO {HOLDERBYMONTH} (Holder, CollectionId, ResetDate, TotalNFTs, InterestEarned, UpdateAppliedId) VALUES "
     for holder in report.keys():
         total_nfts = 0
         interest_earned = 0

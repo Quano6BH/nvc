@@ -44,9 +44,9 @@ const scatterAbi = [
 				"type": "bool"
 			}
 		],
-		"name": "scatterEther",
+		"name": "scatterEthers",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
@@ -72,7 +72,7 @@ const scatterAbi = [
 				"type": "bool"
 			}
 		],
-		"name": "scatterToken",
+		"name": "scatterTokens",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -124,11 +124,12 @@ const scatterAbi = [
 	}
 ]
 
+
 const getScatterContract = web3 => {
-    return new web3.eth.Contract(
-        scatterAbi,
-        process.env.REACT_APP_SCATTER_CONTRACT_ADDRESS
-    )
+	return new web3.eth.Contract(
+		scatterAbi,
+		process.env.REACT_APP_SCATTER_CONTRACT_ADDRESS
+	)
 }
 
 export default getScatterContract

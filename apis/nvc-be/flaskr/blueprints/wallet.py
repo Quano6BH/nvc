@@ -3,7 +3,6 @@ import datetime
 from flask import request, Blueprint, current_app
 from eth_account.messages import encode_defunct
 import jwt
-from web3.auto import w3
 from web3 import Web3
 from flaskr.business_layer.wallet import WalletBusinessLayer
 wallet = Blueprint('wallet', __name__,
@@ -14,9 +13,9 @@ wallet = Blueprint('wallet', __name__,
 def nft_detail_cur(wallet_address):
     nft_id = request.args.get('tokenId')
     collection_id = request.args.get('collectionId')
-    date_time = request.args.get('datetime')
-    if(not date_time):
-        date_time = datetime.date.today()
+    # date_time = request.args.get('datetime')
+    # if (not date_time):
+    date_time = datetime.date.today()
 
     handler = WalletBusinessLayer(current_app.config["DATABASE"])
     history = handler.get_nft_history_of_wallet(wallet_address,
@@ -24,11 +23,6 @@ def nft_detail_cur(wallet_address):
 
     current = handler.get_nft_detail_in_current_month_of_wallet(wallet_address,
                                                                 collection_id, nft_id, date_time)
-
-    # if earnings is None:
-    #     return "Not found", 404
-    # if(not history):
-    #     return "", 404
 
     return {
         "data": {
@@ -70,7 +64,7 @@ def index():
     }
     '''
     authorization = request.headers.get('Authorization')
-    if(not authorization):
+    if (not authorization):
         return {'message': 'Unauthorized.'}, 403
 
     authorization = authorization.replace(authorization[0:7], '')
@@ -84,7 +78,7 @@ def index():
         return {'message': 'Invalid token. Please log in again.'}, 403
 
     # print(payload)
-    if(Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
+    if (Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
         return {'message': 'Unauthorized.'}, 403
 
     body = request.get_json()
@@ -100,11 +94,12 @@ def index():
 @wallet.route("/<wallet_address>/collections/<collection_id>")
 def wallet_detail(wallet_address, collection_id):
 
-    date_time = request.args.get('datetime')
-    if(not date_time):
-        date_time = datetime.date.today()
+    # date_time = request.args.get('datetime')
+    # if (not date_time):
+    date_time = datetime.date.today()
 
     handler = WalletBusinessLayer(current_app.config["DATABASE"])
-    data = handler.get_wallet_collection_info(wallet_address, collection_id, date_time)
+    data = handler.get_wallet_collection_info(
+        wallet_address, collection_id, date_time)
 
     return ({"data": data}, 200) if data else ("404", 404)
