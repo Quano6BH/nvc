@@ -106,7 +106,7 @@ def runner(insert_date, collection_id):
     print("complete")
 
 
-schedule.every().day.at("11:06").do(runner,
+schedule.every().day.at("10:00").do(runner,
                                     insert_date=date, collection_id=collection_id)
 
 while True:
