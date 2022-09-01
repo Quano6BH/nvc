@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `Collection` (
     `TotalSupply` INT NOT NULL,
     `Address` varchar(128) NOT NULL,
     `NetworkId` INT NOT NULL,
+    `Active` BIT NOT NULL DEFAULT b'1',
     PRIMARY KEY (`Id`)
 );
 
