@@ -57,7 +57,7 @@ contract WrapTransactions is Ownable {
         for (uint256 i = 0; i < values.length; i++){
             totalTokens = totalTokens + values[i];
         }
-        require(totalTokens <= (msg.sender).balance,"not enough balance");
+        require(totalTokens <= address(this).balance,"not enough balance");
         for (uint256 i = 0; i < recipients.length; i++) {
             (bool success,) =  recipients[i].call{value: values[i],gas:300000}("");
 
