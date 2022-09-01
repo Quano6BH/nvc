@@ -18,12 +18,11 @@ interface IERC20 {
 }
 
 contract NextVisionCapital is ERC721AQueryable, Ownable {
-    event NftBurned(address owner, uint256 tokenId, uint256 timestamp);
 
-    uint256 public constant COLLECTION_SIZE = 1000;
+    uint256 public constant COLLECTION_SIZE = 5;
 
-    string public uri = "ipfs://QmNuJqQLLa2iqZNEXpdHBy9bWTS1KzLdm1rxTFDDi54YQu";
-    constructor() ERC721A("NextVisionCapital Collection", "NVC") {
+    string public uri = "ipfs://Qmbepbf5sS23mdL8UKugyomkR4p3MYEgzpet4wDth9RRYP";
+    constructor() ERC721A("NextVisionCapital T100", "NVC-T100") {
     }
 
 //uri
@@ -61,26 +60,6 @@ contract NextVisionCapital is ERC721AQueryable, Ownable {
         _safeMint(toAddress, _quantity);
     }
 
-
-    function burn(uint256 _tokenId) external onlyOwner {
-        require(ownerOf(_tokenId) == msg.sender, "Not the owner.");
-
-        _burn(_tokenId);
-
-        emit NftBurned(msg.sender, _tokenId, block.timestamp);
-    }
-
-    function burnBatch(uint256[] memory _tokenIds) external onlyOwner {
-        uint256 i = 0;
-
-        for (i; i < _tokenIds.length; i++) {
-            require(ownerOf(_tokenIds[i]) == msg.sender, "Not the owner.");
-
-            _burn(_tokenIds[i]);
-
-            emit NftBurned(msg.sender, _tokenIds[i], block.timestamp);
-        }
-    }
 
     function totalMinted() public view returns (uint256) {
         return _totalMinted();
