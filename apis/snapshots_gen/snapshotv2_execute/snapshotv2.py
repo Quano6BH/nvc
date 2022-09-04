@@ -1,16 +1,11 @@
 import time
 import json
+import os
 from web3 import Web3, HTTPProvider
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Lock
 import datetime
 import requests
-
-
-date = str(datetime.date.today())
-year = date.split("-")[0]
-month = date.split("-")[1]
-day = date.split("-")[2]
 
 
 snapshot_file = "./snapshotv2_execute/snapshot_NVC.txt"
@@ -108,7 +103,11 @@ def on_retry_failed():
 
 
 def runner(collection_id, collection_address):
-    contract = get_contract(collection_address)
+    date = str(datetime.date.today())
+    year = date.split("-")[0]
+    month = date.split("-")[1]
+    day = date.split("-")[2]
+    # contract = get_contract(collection_address)
     # total_supply = contract.functions.totalSupply().call()
     total_supply = get_total(collection_address)
 
@@ -131,5 +130,10 @@ def runner(collection_id, collection_address):
             on_retry_failed()
     with open(snapshot_file, "r") as f:
         success_snapshots = f.read()
-    with open(f"./snapshot/{collection_id}/{year}-{month}/{collection_id}_{year}-{month}-{day}.txt", "w")as file:
-        file.write(success_snapshots)
+    try:
+        os.makedirs(f"./snapshot/{collection_id}/{year}-{month}/")
+    except:
+        pass
+    finally:
+        with open(f"./snapshot/{collection_id}/{year}-{month}/{collection_id}_{year}-{month}-{day}.txt", "w")as file:
+            file.write(success_snapshots)

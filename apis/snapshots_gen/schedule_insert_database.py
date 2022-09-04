@@ -3,8 +3,6 @@ import execution.execute as ex
 import schedule
 import snapshotv2_execute.snapshotv2 as snapshot
 
-# The ID of the collection:
-collection_id = 2
 
 collection_total_supply = 560
 
@@ -108,7 +106,7 @@ def runner(collection_id):
 
 
 schedule.every().day.at("10:48").do(runner,
-                                    collection_id=collection_id)
+                                    collection_id=2)
 
 while True:
     schedule.run_pending()
