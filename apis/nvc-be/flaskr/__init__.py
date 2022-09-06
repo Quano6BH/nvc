@@ -9,6 +9,7 @@ from flaskr.config import Config
 
 from flaskr.cache import cache
 
+from flasgger import Swagger
 
 def create_app(config=Config):
     app = Flask(__name__, instance_relative_config=True)
@@ -31,6 +32,7 @@ def create_app(config=Config):
     from flaskr.blueprints.wallet import wallet
     app.register_blueprint(wallet)
 
+    swagger = Swagger(app)
     cache.init_app(app)
 
     CORS(app, allow_headers=["Content-Type", "Authorization",

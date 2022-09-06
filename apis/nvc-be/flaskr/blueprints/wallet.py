@@ -11,6 +11,33 @@ wallet = Blueprint('wallet', __name__,
 
 @wallet.route("/<wallet_address>/nft-detail")
 def nft_detail_cur(wallet_address):
+    """Return detail data of an nft by wallet.
+    ---
+    parameters:
+      - in: path
+        name: wallet_address
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: tokenId
+        schema:
+          type: int
+        required: true
+      - in: query
+        name: collectionId
+        schema:
+          type: int
+        required: true
+    responses:
+      200:
+        description: Detail data of an nft by wallet.
+        examples:
+          application/json:
+            {
+                "data":{}
+            }
+    """
     nft_id = request.args.get('tokenId')
     collection_id = request.args.get('collectionId')
     # date_time = request.args.get('datetime')
@@ -38,11 +65,17 @@ def nft_detail_cur(wallet_address):
 
 @wallet.route('<address>', methods=["PATCH"])
 def update(address):
-    '''
-    Request: {
-        "kyc": True
-    }
-    '''
+    """Update kyc of wallet
+    ---
+    responses:
+      200:
+        description: zz
+        examples:
+          application/json:
+            {
+                "data":{}
+            }
+    """
     body = request.get_json()
     kyc = body["kyc"]
     handler = WalletBusinessLayer(current_app.config["DATABASE"])

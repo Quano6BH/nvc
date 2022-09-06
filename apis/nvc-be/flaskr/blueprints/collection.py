@@ -39,7 +39,33 @@ def token_required(f):
 
 
 @collection.route("/")
+
 def index():
+    """Return list of collections.
+    ---
+    definitions:
+      Collection:
+        type: object
+        properties:
+          id:
+            type: int
+          name:
+            type: string
+          description:
+            type: string
+          ipfs:
+            type: string
+          price:
+            type: int
+    responses:
+      200:
+        description: A list of collections 
+        examples:
+          application/json:
+            {
+                "data":{}
+            }
+    """
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     collections = handler.get_collections()
 
@@ -51,6 +77,23 @@ def index():
 
 @collection.route("/<id>")
 def get_collection_by_id(id):
+    """Return detail data of collection.
+    ---
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+    responses:
+      200:
+        description: Collection detail data
+        examples:
+          application/json:
+            {
+                "data":{}
+            }
+    """
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
     collection = handler.get_collection_with_updates_by_id(id)
 
