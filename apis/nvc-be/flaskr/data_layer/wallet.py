@@ -58,7 +58,7 @@ class WalletDataLayer(BaseDataLayer):
         FROM {BaseDataLayer.WALLET_TABLE_NAME} w
             INNER JOIN {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd
                 ON w.Address = hbd.Holder
-        WHERE Address = %(wallet_address)s'
+        WHERE Address = %(wallet_address)s
         AND SnapshotDate = %(datetime)s
         AND CollectionId = %(collection_id)s;
     '''

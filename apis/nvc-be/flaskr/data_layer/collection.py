@@ -45,7 +45,7 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchall()
 
-    get_nft_interest_history_query_template = f'''
+    get_nft_detail_query_template = f'''
         SELECT MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  
             MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
         FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm 
@@ -72,7 +72,7 @@ class CollectionDataLayer(BaseDataLayer):
 
                 self._execute_query(
                     cursor=cursor,
-                    query_template=self.get_nft_interest_history_query_template,
+                    query_template=self.get_nft_detail_query_template,
                     collection_id=collection_id,
                     token_id=token_id,
                     snapshot_date=snapshot_date
