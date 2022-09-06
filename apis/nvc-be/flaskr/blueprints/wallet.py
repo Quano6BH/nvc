@@ -35,7 +35,29 @@ def nft_detail_cur(wallet_address):
         examples:
           application/json:
             {
-                "data":{}
+                "data": {
+            "walletAddress": 0xF2Ccf89d5C92036A8075F6da96E1bb970969AA47,
+            "nftId": 0,
+            "collectionId": 0,
+            "datetime": 2022-08-12,
+            "history": {
+                    "datetime": 2022-08-12,
+                    "paid": 1,
+                    "interestRate": 10%,
+                    "principal": 1000,
+                    "updateAppliedId": 1,
+                    "holdDays": 10,
+                    "interestEarned": 5,
+                },
+            "current":  {
+            "datetime": 2022-08-12,
+            "interestRate": 10%,
+            "principal": 1000,
+            "updateAppliedId": 1,
+            "holdDays": 10,
+            "interestEarned": 10,
+        }
+        }
             }
     """
     nft_id = request.args.get('tokenId')
@@ -67,14 +89,17 @@ def nft_detail_cur(wallet_address):
 def update(address):
     """Update kyc of wallet
     ---
+    parameters:
+      - in: path
+        name: address
+        schema:
+          type: string
+        required: true
     responses:
       200:
-        description: zz
+        description: update kyc status 
         examples:
-          application/json:
-            {
-                "data":{}
-            }
+          200
     """
     body = request.get_json()
     kyc = body["kyc"]
@@ -126,6 +151,36 @@ def index():
 
 @wallet.route("/<wallet_address>/collections/<collection_id>")
 def wallet_detail(wallet_address, collection_id):
+    """Return wallet info in one collection.
+    ---
+    parameters:
+      - in: path
+        name: wallet_address
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: collection_id
+        schema:
+          type: integer
+        required: true
+    responses:
+      200:
+        description: wallet info in one collection
+        examples:
+          application/json:
+            {
+               "kyc": 1,
+            "walletAddress": 0x0013C382001DF4022FE14814a865cEF7Fb814e14,
+            "snapshot_date": 25/08/2022,
+            "totalEarnedInMonth": total_earned_in_month,
+            "nfts": {"tokenId": 0,
+                "holdDaysInMonth": 10,
+                "interestEarnedInMonth": 20,
+                "holding": 1,
+            }
+            }
+    """
 
     # date_time = request.args.get('datetime')
     # if (not date_time):

@@ -42,6 +42,14 @@ def index():
 
 @authenticate.route('/request', methods=["POST"])
 def requestAuthenticate():
+    """Request to authenticate
+    ---
+    responses:
+      200:
+        description: Request to authenticate
+        examples:
+          You are signing NVC Dashboard App using this nonce for address 0x66707b95dFCC2C17f37CeeE0037A17078431814A with 1
+    """
     data = request.get_json()
     wallet = Web3.toChecksumAddress(data["wallet"])
     if wallet not in current_app.config["ADMIN_WALLETS"]:

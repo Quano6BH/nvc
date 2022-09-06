@@ -4,3 +4,4 @@ flask-cors
 web3
 pyjwt
 Flask-Caching
+flasgger
