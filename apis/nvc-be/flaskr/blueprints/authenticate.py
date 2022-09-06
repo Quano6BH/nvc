@@ -19,7 +19,7 @@ def index():
     ---
     parameters:
         - in: body
-          description: The user to create.
+          description: Accept authenticate request.
           schema:
             type: object
             required:
@@ -70,7 +70,7 @@ def requestAuthenticate():
     ---
     parameters:
         - in: body
-          description: The user to create.
+          description: Request to authenticate.
           schema:
             type: object
             required:
