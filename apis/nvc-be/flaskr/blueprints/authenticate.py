@@ -15,6 +15,30 @@ MESSAGE_TEMPLATE = "You are signing NVC Dashboard App using this nonce for addre
 
 @authenticate.route('', methods=["POST"])
 def index():
+    """Accept authenticate request
+    ---
+    parameters:
+        - in: body
+          description: The user to create.
+          schema:
+            type: object
+            required:
+              - userName
+            properties:
+              wallet:
+                type: string
+              signature:
+                type: string
+    responses:
+      200:
+        description: Request to authenticate
+        examples:
+          {
+        "wallet": wallet,
+        "exp": 2023-08-09,
+        "iat": 2022-08-09
+    }
+    """
     data = request.get_json()
     wallet = Web3.toChecksumAddress(data["wallet"])
     signature = data["signature"]
@@ -44,6 +68,16 @@ def index():
 def requestAuthenticate():
     """Request to authenticate
     ---
+    parameters:
+        - in: body
+          description: The user to create.
+          schema:
+            type: object
+            required:
+              - userName
+            properties:
+              wallet:
+                type: string
     responses:
       200:
         description: Request to authenticate
