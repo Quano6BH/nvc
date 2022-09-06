@@ -1,6 +1,6 @@
 import datetime
 from functools import wraps
-from flask import current_app, Blueprint, jsonify, make_response,  request
+from flask import current_app, Blueprint, jsonify, make_response,  request, escape
 import json
 import jwt
 from web3 import Web3
@@ -65,7 +65,7 @@ def index():
         return "Not found", 404
 
 
-@collection.route("/<id>")
+@collection.route("/<int:id>")
 def get_collection_by_id(id):
     """Return detail data of collection.
     ---
@@ -115,8 +115,8 @@ def get_collection_by_id(id):
         return "Not found", 404
 
 
-@collection.route("/<collection_id>/nfts/<nft_id>", methods=["GET"])
-def get_nft_interest_history(collection_id, nft_id):
+@collection.route("/<int:collection_id>/nfts/<int:nft_id>", methods=["GET"])
+def get_nft_detail(collection_id, nft_id):
     """Return nft interest history.
     ---
     parameters:
@@ -147,7 +147,7 @@ def get_nft_interest_history(collection_id, nft_id):
     snapshot_date = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    history = handler.get_nft_interest_history(
+    history = handler.get_nft_detail(
         collection_id, nft_id, snapshot_date)
 
     return {
@@ -161,6 +161,7 @@ def get_nft_interest_history(collection_id, nft_id):
 
 COLLECTION_REPORT_CACHE_KEY = "collection_report"
 
+#     cache.set(COLLECTION_REPORT_CACHE_KEY, collection_report)
 
 # @collection.route("/<id>/report")
 # @token_required

@@ -20,8 +20,8 @@ class WalletDataLayer(BaseDataLayer):
 
     update_wallet_kyc_query_template = f'''
         UPDATE {BaseDataLayer.WALLET_TABLE_NAME} 
-        SET `Kyc` = b'$kyc' 
-        WHERE (`Address` = '$address');
+        SET `Kyc` = b'%(kyc)s'
+        WHERE (`Address` = %(address)s);
     '''
 
     def update_wallet_kyc(self, wallet_address, kyc = True):
@@ -37,8 +37,8 @@ class WalletDataLayer(BaseDataLayer):
 
     update_wallets_kyc_query_template = f'''
         UPDATE {BaseDataLayer.WALLET_TABLE_NAME} 
-        SET `Kyc` = b'$kyc' 
-        WHERE (`Address` IN ('$addresses'));
+        SET `Kyc` = b'%(kyc)s' 
+        WHERE (`Address` IN (%(addresses)s));
     '''
     def update_wallets_kyc(self, wallet_addresses, kyc = True):
         with self.create_db_connection(self.db_config) as db_connection:
@@ -58,9 +58,9 @@ class WalletDataLayer(BaseDataLayer):
         FROM {BaseDataLayer.WALLET_TABLE_NAME} w
             INNER JOIN {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd
                 ON w.Address = hbd.Holder
-        WHERE Address = '$wallet_address' 
-        AND SnapshotDate = '$datetime'
-        AND CollectionId = $collection_id;
+        WHERE Address = %(wallet_address)s'
+        AND SnapshotDate = %(datetime)s
+        AND CollectionId = %(collection_id)s;
     '''
 
     def get_wallet_collection_info(self, wallet_address, collection_id, datetime):
@@ -89,10 +89,10 @@ class WalletDataLayer(BaseDataLayer):
             INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
 				ON cu.Id = hbd.UpdateAppliedId  
         
-        WHERE hbd.CollectionId = $collection_id
-        AND hbd.Holder = '$wallet_address' 
-        AND hbd.SnapshotDate <= '$snapshot_date' 
-        AND hbd.TokenId = '$token_id';
+        WHERE hbd.CollectionId = %(collection_id)s
+        AND hbd.Holder = '%(wallet_address)s' 
+        AND hbd.SnapshotDate <= %(snapshot_date)s'
+        AND hbd.TokenId = %(token_id)s;
     '''
 
     def get_nft_history_of_wallet(
@@ -119,10 +119,10 @@ class WalletDataLayer(BaseDataLayer):
                 
             INNER JOIN CollectionUpdate cu 
 				ON cu.Id = hbd.UpdateAppliedId  
-        WHERE hbd.CollectionId = $collection_id
-        AND hbd.Holder = '$wallet_address' 
-        AND hbd.SnapshotDate = '$snapshot_date' 
-        AND hbd.TokenId = '$token_id';
+        WHERE hbd.CollectionId = %(collection_id)s
+        AND hbd.Holder = %(wallet_address)s 
+        AND hbd.SnapshotDate = '%(snapshot_date)s' 
+        AND hbd.TokenId = %(token_id)s;
     '''
 
     def get_nft_detail_in_current_month_of_wallet(

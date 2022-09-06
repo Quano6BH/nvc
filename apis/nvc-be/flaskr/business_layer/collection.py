@@ -32,10 +32,10 @@ class CollectionBusinessLayer:
 
         return rows
 
-    def get_nft_interest_history(
+    def get_nft_detail(
         self, collection_id, token_id, snapshot_date
     ):
-        result = self.data_layer.get_nft_interest_history(
+        result = self.data_layer.get_nft_detail(
             collection_id, token_id, snapshot_date)
 
         if not result:

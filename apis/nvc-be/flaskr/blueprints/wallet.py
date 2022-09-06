@@ -85,29 +85,29 @@ def nft_detail_cur(wallet_address):
     }
 
 
-@wallet.route('<address>', methods=["PATCH"])
-def update(address):
-    """Update kyc of wallet
-    ---
-    parameters:
-      - in: path
-        name: address
-        schema:
-          type: string
-        required: true
-    responses:
-      200:
-        description: update kyc status 
-        examples:
-          200
-    """
-    body = request.get_json()
-    kyc = body["kyc"]
-    handler = WalletBusinessLayer(current_app.config["DATABASE"])
+# @wallet.route('<address>', methods=["PATCH"])
+# def update(address):
+#     """Update kyc of wallet
+#     ---
+#     parameters:
+#       - in: path
+#         name: address
+#         schema:
+#           type: string
+#         required: true
+#     responses:
+#       200:
+#         description: update kyc status 
+#         examples:
+#           200
+#     """
+#     body = request.get_json()
+#     kyc = body["kyc"]
+#     handler = WalletBusinessLayer(current_app.config["DATABASE"])
 
-    handler.update_wallet_kyc(address, kyc)
+#     handler.update_wallet_kyc(address, kyc)
 
-    return "", 200
+#     return "", 200
 
 
 @wallet.route('', methods=["PATCH"])
@@ -121,23 +121,23 @@ def index():
         ]
     }
     '''
-    authorization = request.headers.get('Authorization')
-    if (not authorization):
-        return {'message': 'Unauthorized.'}, 403
+    # authorization = request.headers.get('Authorization')
+    # if (not authorization):
+    #     return {'message': 'Unauthorized.'}, 403
 
-    authorization = authorization.replace(authorization[0:7], '')
-    payload = {}
-    try:
+    # authorization = authorization.replace(authorization[0:7], '')
+    # payload = {}
+    # try:
 
-        payload = jwt.decode(authorization, "secret", algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        return {'message': 'Token expired, log in again'}, 403
-    except jwt.InvalidTokenError:
-        return {'message': 'Invalid token. Please log in again.'}, 403
+    #     payload = jwt.decode(authorization, "secret", algorithms=["HS256"])
+    # except jwt.ExpiredSignatureError:
+    #     return {'message': 'Token expired, log in again'}, 403
+    # except jwt.InvalidTokenError:
+    #     return {'message': 'Invalid token. Please log in again.'}, 403
 
-    # print(payload)
-    if (Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
-        return {'message': 'Unauthorized.'}, 403
+    # # print(payload)
+    # if (Web3.toChecksumAddress(payload["wallet"]) not in current_app.config["ADMIN_WALLETS"]):
+    #     return {'message': 'Unauthorized.'}, 403
 
     body = request.get_json()
     kyc = body["kyc"]
@@ -149,7 +149,7 @@ def index():
     return "", 200
 
 
-@wallet.route("/<wallet_address>/collections/<collection_id>")
+@wallet.route("/<wallet_address>/collections/<int:collection_id>")
 def wallet_detail(wallet_address, collection_id):
     """Return wallet info in one collection.
     ---

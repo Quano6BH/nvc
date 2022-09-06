@@ -30,7 +30,7 @@ class CollectionDataLayer(BaseDataLayer):
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c 
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
         ON  c.Id = cu.CollectionId 
-        WHERE c.Id = $collection_id
+        WHERE c.Id = %(collection_id)s
         AND c.Active = b'1';
     '''
 
@@ -57,14 +57,14 @@ class CollectionDataLayer(BaseDataLayer):
             INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
                 ON cu.Id = hbm.UpdateAppliedId  
 
-        WHERE hbm.CollectionId = $collection_id
-        AND hbd.SnapshotDate <= '$snapshot_date' 
-        AND hbd.TokenId = '$token_id'
+        WHERE hbm.CollectionId = %(collection_id)s
+        AND hbd.SnapshotDate <= %(snapshot_date)s 
+        AND hbd.TokenId = %(token_id)s
 
         GROUP BY hbd.SnapshotDate
     '''
 
-    def get_nft_interest_history(
+    def get_nft_detail(
         self, collection_id, token_id, snapshot_date
     ):
         with self.create_db_connection(self.db_config) as db_connection:
@@ -83,7 +83,7 @@ class CollectionDataLayer(BaseDataLayer):
     get_collection_latest_holder_by_month_query = f'''
         SELECT ResetDate
         FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME}
-        WHERE ResetDate <= '$snapshot_date' AND CollectionId = $collection_id
+        WHERE ResetDate <= %(snapshot_date)s AND CollectionId = %(collection_id)s
         ORDER BY ResetDate DESC LIMIT 1
 
     '''
@@ -107,7 +107,7 @@ class CollectionDataLayer(BaseDataLayer):
         FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
         ON hbd.UpdateAppliedId = cu.Id
-        WHERE SnapshotDate = '$snapshot_date' AND hbd.CollectionId = $collection_id
+        WHERE SnapshotDate = %(snapshot_date)s AND hbd.CollectionId = %(collection_id)s
         LIMIT 1
 
     '''
@@ -132,8 +132,8 @@ class CollectionDataLayer(BaseDataLayer):
             INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
 				ON cu.Id = hbm.UpdateAppliedId  
         
-        WHERE hbm.CollectionId = $collection_id
-        AND hbm.ResetDate <= '$datetime' ;
+        WHERE hbm.CollectionId = %(collection_id)s
+        AND hbm.ResetDate <= %(datetime)s ;
 
     '''
 
@@ -153,9 +153,9 @@ class CollectionDataLayer(BaseDataLayer):
     get_nfts_summary_by_wallet_query_template = f'''
         SELECT Holder, SUM(InterestEarnedInMonth), COUNT(TokenId)
         FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} 
-        WHERE CollectionId = $collection_id
-        AND Holder = '$wallet_address' 
-        AND SnapshotDate = '$snapshot_date)';
+        WHERE CollectionId = %(collection_id)s
+        AND Holder = %(wallet_address)s 
+        AND SnapshotDate = %(snapshot_date)s);
     '''
 
     def get_nfts_summary_by_wallet(
@@ -177,9 +177,9 @@ class CollectionDataLayer(BaseDataLayer):
     get_unique_holder_query_template = f'''
         SELECT count(distinct Holder) 
         FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} 
-        WHERE SnapshotDate = '$snapshot_date' 
+        WHERE SnapshotDate = %(snapshot_date)s 
         AND Holding = 1 
-        AND CollectionId = $collection_id;
+        AND CollectionId = %(collection_id)s;
     '''
 
     def get_unique_holder(self, collection_id, snapshot_date):
@@ -198,8 +198,8 @@ class CollectionDataLayer(BaseDataLayer):
     get_total_pay_query_template = f'''
         SELECT sum(InterestEarned) 
         FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME}
-        WHERE SnapshotDate = '$snapshot_date' 
-        AND CollectionId = $collection_id;
+        WHERE SnapshotDate = %(snapshot_date)s'
+        AND CollectionId = %(collection_id)s;
         
     '''
 
@@ -221,8 +221,8 @@ class CollectionDataLayer(BaseDataLayer):
         FROM {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
             INNER JOIN {BaseDataLayer.COLLECTION_TABLE_NAME} c 
             ON cu.CollectionId = c.Id 
-        WHERE (TIMESTAMPDIFF(day, FromDate, '$snapshot_date') ) < 0 
-        AND CollectionId = $collection_id AND Type = 'Update' 
+        WHERE (TIMESTAMPDIFF(day, FromDate, %(snapshot_date)s) ) < 0 
+        AND CollectionId = %(collection_id)s AND Type = 'Update' 
         ORDER BY FromDate ASC LIMIT 1 ;
     '''
 
@@ -242,8 +242,8 @@ class CollectionDataLayer(BaseDataLayer):
     get_reset_day_query_template = f'''
         SELECT FromDate 
         FROM {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME}
-        WHERE (TIMESTAMPDIFF(day, FromDate, '$snapshot_date') ) <= 0 
-        AND CollectionId = $collection_id 
+        WHERE (TIMESTAMPDIFF(day, FromDate, %(snapshot_date)s) ) <= 0 
+        AND CollectionId = %(collection_id)s
         AND Type = 'Update' 
         ORDER BY FromDate ASC LIMIT 1
     '''
