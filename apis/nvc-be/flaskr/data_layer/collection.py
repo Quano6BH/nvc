@@ -10,7 +10,7 @@ class CollectionDataLayer(BaseDataLayer):
     get_collections_query_template = f'''
         SELECT Id, Name, Description, Price, Ipfs
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME}
-        -- WHERE Active = b'1';
+        WHERE Active = b'1';
         ;
     '''
 
@@ -31,7 +31,7 @@ class CollectionDataLayer(BaseDataLayer):
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
         ON  c.Id = cu.CollectionId 
         WHERE c.Id = %(collection_id)s
-        -- AND c.Active = b'1';
+        AND c.Active = b'1';
         ;
     '''
 
