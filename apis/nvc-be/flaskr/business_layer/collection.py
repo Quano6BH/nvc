@@ -32,27 +32,44 @@ class CollectionBusinessLayer:
 
         return rows
 
-    def get_nft_detail(
+    def get_nft_detail_current(
         self, collection_id, token_id, snapshot_date
     ):
-        result = self.data_layer.get_nft_detail(
+        data = self.data_layer.get_nft_detail_current(
             collection_id, token_id, snapshot_date)
-
-        if not result:
+        print(data)
+        if not data:
             return None
 
+        return {
+                    "datetime": str(data["SnapshotDate"]),
+                    "interestRate": data["Interest"],
+                    "principal": data["Principal"],
+                    "interestEarned": data["InterestEarnedInMonth"],
+                    "holdDays": data["HoldDaysInMonth"],
+                    "updateAppliedId": data["UpdateAppliedId"],
+                }
+
+    def get_nft_detail_history(
+        self, collection_id, token_id, snapshot_date
+    ):
+        rows = self.data_layer.get_nft_detail_history(
+            collection_id, token_id, snapshot_date)
+
+        if not rows:
+            return None
         history = []
-        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
-        for row in result:
-            _, _, row_snapshot_date, interest, principal, updateAppliedId, interest_earned_in_month, hold_days_in_month = row
+
+        for row in rows:
             history.append(
                 {
-                    "datetime": str(row_snapshot_date),
-                    "interestRate": interest,
-                    "principal": principal,
-                    "interestEarned": interest_earned_in_month,
-                    "holdDays": hold_days_in_month,
-                    "updateAppliedId": updateAppliedId,
+                    "datetime": str(row["SnapshotDate"]),
+                    "interestRate": row["Interest"],
+                    "principal": row["Principal"],
+                    "paid": row["Paid"] == b'\x01',
+                    "interestEarned": row["InterestEarnedInMonth"],
+                    "holdDays": row["HoldDaysInMonth"],
+                    "updateAppliedId": row["UpdateAppliedId"],
                 }
             )
 

@@ -1,4 +1,3 @@
-import MySQLdb
 from string import Template
 from .base import BaseDataLayer
 
@@ -11,7 +10,8 @@ class CollectionDataLayer(BaseDataLayer):
     get_collections_query_template = f'''
         SELECT Id, Name, Description, Price, Ipfs
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME}
-        WHERE Active = b'1';
+        -- WHERE Active = b'1';
+        ;
     '''
 
     def get_collections(self):
@@ -31,7 +31,8 @@ class CollectionDataLayer(BaseDataLayer):
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
         ON  c.Id = cu.CollectionId 
         WHERE c.Id = %(collection_id)s
-        AND c.Active = b'1';
+        -- AND c.Active = b'1';
+        ;
     '''
 
     def get_collection_with_updates_by_id(self, collection_id):
@@ -45,34 +46,79 @@ class CollectionDataLayer(BaseDataLayer):
 
                 return cursor.fetchall()
 
-    get_nft_detail_query_template = f'''
-        SELECT MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  
-            MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
-        FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME} hbm 
-            INNER JOIN {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd 
+    get_nft_detail_current_query_template = f'''
+
+        SELECT 
+            MIN(hbd.CollectionId) as CollectionId, 
+            MIN(hbd.TokenId) as TokenId, 
+            SnapshotDate, 
+            MIN(cu.Interest) as Interest, 
+            MIN(cu.Principal) as Principal, 
+            MIN(hbd.UpdateAppliedId) as UpdateAppliedId, 
+            SUM(hbd.HoldDaysinMonth) as HoldDaysInMonth, 
+            SUM(hbd.InterestEarnedInMonth) as InterestEarnedInMonth
+        FROM {BaseDataLayer.NFT_HOLDER_BY_DATE_TABLE_NAME} hbd 
+                
+            INNER JOIN CollectionUpdate cu 
+				ON cu.Id = hbd.UpdateAppliedId  
+        WHERE hbd.CollectionId = %(collection_id)s
+        AND hbd.SnapshotDate = %(snapshot_date)s 
+        AND hbd.TokenId = %(token_id)s
+        GROUP BY hbd.SnapshotDate;
+    '''
+
+    def get_nft_detail_current(
+        self, collection_id, token_id, snapshot_date
+    ):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with self.create_cursor(db_connection) as cursor:
+
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_nft_detail_current_query_template,
+                    collection_id=collection_id,
+                    token_id=token_id,
+                    snapshot_date=snapshot_date
+                )
+
+                return cursor.fetchone()
+                
+    get_nft_detail_history_query_template = f'''
+
+        SELECT 	
+            MIN(hbm.CollectionId) as CollectionId, 
+            MIN(hbd.TokenId) as TokenId, 
+            SnapshotDate, 
+            MIN(cu.Interest) as Interest, 
+            MIN(cu.Principal) as Principal,  
+            MIN(hbm.UpdateAppliedId) as UpdateAppliedId, 
+            SUM(hbd.InterestEarnedInMonth) as InterestEarnedInMonth, 
+            SUM(hbd.HoldDaysInMonth) as HoldDaysInMonth, 
+            MAX(hbm.Paid) as Paid
+        FROM HolderByMonth hbm 
+            INNER JOIN HolderByDate hbd 
                 ON hbm.CollectionId = hbd.CollectionId 
-                AND hbm.Holder = hbd.Holder 
                 AND hbm.ResetDate = hbd.SnapshotDate 
 
-            INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu 
+            INNER JOIN CollectionUpdate cu 
                 ON cu.Id = hbm.UpdateAppliedId  
 
         WHERE hbm.CollectionId = %(collection_id)s
         AND hbd.SnapshotDate <= %(snapshot_date)s 
         AND hbd.TokenId = %(token_id)s
-
         GROUP BY hbd.SnapshotDate
+
     '''
 
-    def get_nft_detail(
+    def get_nft_detail_history(
         self, collection_id, token_id, snapshot_date
     ):
         with self.create_db_connection(self.db_config) as db_connection:
-            with db_connection.cursor() as cursor:
+            with self.create_cursor(db_connection) as cursor:
 
                 self._execute_query(
                     cursor=cursor,
-                    query_template=self.get_nft_detail_query_template,
+                    query_template=self.get_nft_detail_history_query_template,
                     collection_id=collection_id,
                     token_id=token_id,
                     snapshot_date=snapshot_date

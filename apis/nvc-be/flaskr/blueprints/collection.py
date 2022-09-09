@@ -117,7 +117,7 @@ def get_collection_by_id(id):
 
 @collection.route("/<int:collection_id>/nfts/<int:nft_id>", methods=["GET"])
 def get_nft_detail(collection_id, nft_id):
-    """Return nft interest history.
+    """Return nft detail.
     ---
     parameters:
       - in: path
@@ -139,22 +139,45 @@ def get_nft_detail(collection_id, nft_id):
                 "data": {
             "tokenId": 0,
             "collectionId": 0,
-            "history": history
-        }
+            "history": [{
+                    "datetime": "",
+                    "interestRate": 13,
+                    "principal": 2000,
+                    "paid": true,
+                    "interestEarned": 12.5,
+                    "holdDays": 12,
+                    "updateAppliedId": 13
+                }
+                ],
+            "current": {
+                    "datetime": "",
+                    "interestRate": 14,
+                    "principal": 2000,
+                    "paid": true,
+                    "interestEarned": 12.5,
+                    "holdDays": 12,
+                    "updateAppliedId": 13
+                }
+                
+        
+            }
             }
     """
     # if (not snapshot_date):
     snapshot_date = datetime.date.today()
 
     handler = CollectionBusinessLayer(current_app.config["DATABASE"])
-    history = handler.get_nft_detail(
+    history = handler.get_nft_detail_history(
+        collection_id, nft_id, snapshot_date)
+    current = handler.get_nft_detail_current(
         collection_id, nft_id, snapshot_date)
 
     return {
         "data": {
             "tokenId": nft_id,
             "collectionId": collection_id,
-            "history": history
+            "history": history,
+            "current":current
         }
     }
 
