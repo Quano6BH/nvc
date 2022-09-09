@@ -149,8 +149,8 @@ def index():
     return "", 200
 
 
-@wallet.route("/<wallet_address>/collections/<int:collection_id>")
-def wallet_detail(wallet_address, collection_id):
+@wallet.route("/<wallet_address>",methods=["GET"])
+def wallet_detail(wallet_address):
     """Return wallet info in one collection.
     ---
     parameters:
@@ -159,11 +159,6 @@ def wallet_detail(wallet_address, collection_id):
         schema:
           type: string
         required: true
-      - in: path
-        name: collection_id
-        schema:
-          type: integer
-        required: true
     responses:
       200:
         description: wallet info in one collection
@@ -171,23 +166,16 @@ def wallet_detail(wallet_address, collection_id):
           application/json:
             {
                "kyc": 1,
-            "walletAddress": 0x0013C382001DF4022FE14814a865cEF7Fb814e14,
-            "snapshot_date": 25/08/2022,
-            "totalEarnedInMonth": total_earned_in_month,
-            "nfts": {"tokenId": 0,
-                "holdDaysInMonth": 10,
-                "interestEarnedInMonth": 20,
-                "holding": 1,
+            "walletAddress": 0x0013C382001DF4022FE14814a865cEF7Fb814e14
             }
-            }
+            
     """
 
     # date_time = request.args.get('datetime')
     # if (not date_time):
-    date_time = datetime.date.today()
 
     handler = WalletBusinessLayer(current_app.config["DATABASE"])
-    data = handler.get_wallet_collection_info(
-        wallet_address, collection_id, date_time)
+    data = handler.get_wallet_info(
+        wallet_address)
 
     return ({"data": data}, 200) if data else ("404", 404)

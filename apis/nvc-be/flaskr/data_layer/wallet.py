@@ -52,6 +52,23 @@ class WalletDataLayer(BaseDataLayer):
 
                 db_connection.commit()
 
+    get_wallet_info_query_template = f'''
+        SELECT Address, Kyc
+        FROM {BaseDataLayer.WALLET_TABLE_NAME} w
+        WHERE Address = %(wallet_address)s;
+    '''
+    
+    def get_wallet_info(self, wallet_address):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with self.create_cursor(db_connection) as cursor:
+
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_wallet_info_query_template,
+                    wallet_address=wallet_address
+                )
+
+                return cursor.fetchone()
 
     get_wallet_collection_info_query_template = f'''
         SELECT Address, Kyc, InterestEarnedInMonth, HoldDaysInMonth,TokenId,SnapshotDate, Holding 
@@ -90,8 +107,8 @@ class WalletDataLayer(BaseDataLayer):
 				ON cu.Id = hbd.UpdateAppliedId  
         
         WHERE hbd.CollectionId = %(collection_id)s
-        AND hbd.Holder = '%(wallet_address)s' 
-        AND hbd.SnapshotDate <= %(snapshot_date)s'
+        AND hbd.Holder = %(wallet_address)s
+        AND hbd.SnapshotDate <= %(snapshot_date)s
         AND hbd.TokenId = %(token_id)s;
     '''
 
@@ -121,7 +138,7 @@ class WalletDataLayer(BaseDataLayer):
 				ON cu.Id = hbd.UpdateAppliedId  
         WHERE hbd.CollectionId = %(collection_id)s
         AND hbd.Holder = %(wallet_address)s 
-        AND hbd.SnapshotDate = '%(snapshot_date)s' 
+        AND hbd.SnapshotDate = %(snapshot_date)s 
         AND hbd.TokenId = %(token_id)s;
     '''
 

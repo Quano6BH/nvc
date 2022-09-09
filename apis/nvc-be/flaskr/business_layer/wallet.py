@@ -116,6 +116,19 @@ class WalletBusinessLayer:
             "nfts": nfts_data
         }
 
+    def get_wallet_info(self, wallet_address):
+        wallet_address = Web3.toChecksumAddress(wallet_address)
+
+        data = self.data_layer.get_wallet_info(
+            wallet_address)
+
+        if not data:
+            return None
+
+        return {
+            "kyc": data["Kyc"] == b'\x01',
+            "walletAddress": data["Address"],
+        }
     def update_wallet_kyc(self, wallet_address, kyc=True):
         self.data_layer.update_wallet_kyc(wallet_address, kyc)
 
