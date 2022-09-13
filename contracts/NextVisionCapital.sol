@@ -5,27 +5,16 @@ pragma solidity ^0.8.4;
 import "./extensions/ERC721AQueryable.sol";
 import "./access/Ownable.sol";
 
-// import "https://github.com/chiru-labs/ERC721A-Upgradeable/blob/main/contracts/ERC721AUpgradeable.sol";
-// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-// import "@openzeppelin/contracts/utils/ERC721/extensions/ERC721Enumerable.sol";
 
-interface IERC20 {
-    function transferFrom(
-        address from,
-        address to,
-        uint256 value
-    ) external returns (bool);
-}
 
 contract NextVisionCapital is ERC721AQueryable, Ownable {
 
     uint256 public constant COLLECTION_SIZE = 5;
 
-    string public uri = "ipfs://Qmbepbf5sS23mdL8UKugyomkR4p3MYEgzpet4wDth9RRYP";
-    constructor() ERC721A("NextVisionCapital T100", "NVC-T100") {
+    string public uri = "ipfs://";
+    constructor() ERC721A("NextVisionCapital", "NVC") {
     }
 
-//uri
     function _baseURI() internal view override returns (string memory) {
         return uri;
     }
