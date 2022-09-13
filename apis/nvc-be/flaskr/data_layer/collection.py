@@ -11,7 +11,6 @@ class CollectionDataLayer(BaseDataLayer):
         SELECT Id, Name, Description, Price, Ipfs
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME}
         WHERE Active = b'1';
-        ;
     '''
 
     def get_collections(self):
@@ -32,7 +31,6 @@ class CollectionDataLayer(BaseDataLayer):
         ON  c.Id = cu.CollectionId 
         WHERE c.Id = %(collection_id)s
         AND c.Active = b'1';
-        ;
     '''
 
     def get_collection_with_updates_by_id(self, collection_id):
@@ -106,7 +104,7 @@ class CollectionDataLayer(BaseDataLayer):
         WHERE hbm.CollectionId = %(collection_id)s
         AND hbd.SnapshotDate <= %(snapshot_date)s 
         AND hbd.TokenId = %(token_id)s
-        GROUP BY hbd.SnapshotDate
+        GROUP BY hbd.SnapshotDate;
 
     '''
 
@@ -130,7 +128,7 @@ class CollectionDataLayer(BaseDataLayer):
         SELECT ResetDate
         FROM {BaseDataLayer.NFT_HOLDER_BY_MONTH_TABLE_NAME}
         WHERE ResetDate <= %(snapshot_date)s AND CollectionId = %(collection_id)s
-        ORDER BY ResetDate DESC LIMIT 1
+        ORDER BY ResetDate DESC LIMIT 1;
 
     '''
 
@@ -154,7 +152,7 @@ class CollectionDataLayer(BaseDataLayer):
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
         ON hbd.UpdateAppliedId = cu.Id
         WHERE SnapshotDate = %(snapshot_date)s AND hbd.CollectionId = %(collection_id)s
-        LIMIT 1
+        LIMIT 1;
 
     '''
 

@@ -50,11 +50,12 @@ def index():
         wallet=wallet, nonce=nonce_dict[wallet])
 
     message = encode_defunct(text=signed_message)
-    print(signed_message, message, signature)
 
-    recoveredAddress = w3.eth.account.recover_message(
+    recovered_address = w3.eth.account.recover_message(
         signable_message=message, signature=signature)
-    print(signed_message, recoveredAddress, signature)
+        
+    if recovered_address != wallet:
+      return "Invalid signature", 400
 
     encoded_jwt = jwt.encode({
         "wallet": wallet,

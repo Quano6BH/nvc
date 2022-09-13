@@ -5,3 +5,4 @@ web3
 pyjwt
 Flask-Caching
 flasgger
+waitress
