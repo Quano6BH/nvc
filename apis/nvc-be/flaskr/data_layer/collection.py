@@ -7,6 +7,40 @@ class CollectionDataLayer(BaseDataLayer):
     def __init__(self, db_config):
         BaseDataLayer.__init__(self, db_config)
 
+
+    get_collections_report_template = f'''
+        SELECT Id, Name, Description, Price, Ipfs, TotalSupply, NetworkId, Address, 
+            IFNULL(
+                (
+                SELECT COUNT(*) FROM {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
+                WHERE c.Id = cu.CollectionId
+                AND cu.Type = 'Update'
+                GROUP BY cu.CollectionId
+                ), 0
+            ) AS Maturity, 
+            (
+                SELECT Interest FROM CollectionUpdate cu
+                WHERE cu.CollectionId = c.Id
+                AND cu.Type = 'Update'
+                AND (cu.FromDate) >= %(datetime)s
+                order by cu.FromDate asc
+                LIMIT 1
+            ) AS InterestRate
+        FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c
+        WHERE Active = b'1';
+    '''
+
+    def get_collections_report(self, datetime):
+        with self.create_db_connection(self.db_config) as db_connection:
+            with self.create_cursor(db_connection) as cursor:
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_collections_report_template,
+                    datetime = str(datetime)
+                )
+
+                return cursor.fetchall()
+
     get_collections_query_template = f'''
         SELECT Id, Name, Description, Price, Ipfs
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME}

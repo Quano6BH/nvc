@@ -186,27 +186,33 @@ COLLECTION_REPORT_CACHE_KEY = "collection_report"
 
 #     cache.set(COLLECTION_REPORT_CACHE_KEY, collection_report)
 
-# @collection.route("/<id>/report")
-# @token_required
-# def collection_report(id):
-#     """Return report of a nft collection.
-#     ---
-#     parameters:
-#       - in: path
-#         name: id
-#         schema:
-#           type: integer
-#         required: true
-#     responses:
-#       200:
-#         description: report of a nft collection
-#         examples:
-#           application/json:
-#             {
-#                 "data":{}
-#             }
-#     """
+@collection.route("/report")
+@token_required
+def collection_report():
+    """Return report of a nft collection.
+    ---
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+    responses:
+      200:
+        description: report of a nft collection
+        examples:
+          application/json:
+            {
+                "data":{}
+            }
+    """
+    date_time = datetime.date.today()
+    handler = CollectionBusinessLayer(current_app.config["DATABASE"])
+    collections = handler.get_collections_report(date_time)
 
+    return {
+      "data": collections
+    }
 #     collection_report = cache.get(COLLECTION_REPORT_CACHE_KEY)
 #     is_reset_cache = request.args.get('resetCache') or False
 

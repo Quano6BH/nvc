@@ -10,6 +10,35 @@ class CollectionBusinessLayer:
     def __init__(self, db_config):
         self.data_layer = CollectionDataLayer(db_config)
 
+    def get_collections_report(self, datetime):
+        result = self.data_layer.get_collections_report(datetime)
+
+        if not result:
+            return None
+
+        rows=[]
+        
+        for row in result:
+            rows.append(
+                {
+                    "id": row["Id"],
+                    "name": row["Name"],
+                    "description": row["Description"],
+                    "ipfs": row["Ipfs"],
+                    "price": row["Price"],
+                    "address":row["Address"],
+                    "totalSupply":row["TotalSupply"], 
+                    "networkId":row["NetworkId"],
+                    "maturity": row["Maturity"],
+                    "totalMinted":row["TotalSupply"], 
+                    "interestRate": row["InterestRate"],
+                    "interestRecorded": 0,
+                    "interestPaid": 0,
+                }
+            )
+        
+        return rows
+
     def get_collections(self):
         result = self.data_layer.get_collections()
 
