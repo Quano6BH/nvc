@@ -1,7 +1,7 @@
 import datetime
 import math
 from flaskr.data_layer.collection import CollectionDataLayer
-
+import json
 from web3 import Web3
 
 
@@ -30,8 +30,11 @@ class CollectionBusinessLayer:
                     "totalSupply":row["TotalSupply"], 
                     "networkId":row["NetworkId"],
                     "maturity": row["Maturity"],
-                    "totalMinted":row["TotalSupply"], 
+                    "totalMinted":row["TotalMinted"],
+                    "totalSentOut":row["TotalMinted"],  
                     "interestRate": row["InterestRate"],
+                    "nextPayDate": str(row["NextPayDate"]),
+                    "transactions": json.loads(row["Transactions"]),
                     "interestRecorded": 0,
                     "interestPaid": 0,
                 }

@@ -9,7 +9,7 @@ class CollectionDataLayer(BaseDataLayer):
 
 
     get_collections_report_template = f'''
-        SELECT Id, Name, Description, Price, Ipfs, TotalSupply, NetworkId, Address, 
+        SELECT Id, Name, Description, Price, Ipfs, TotalSupply, NetworkId, Address, TotalMinted, Transactions,
             IFNULL(
                 (
                 SELECT COUNT(*) FROM {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
@@ -25,7 +25,15 @@ class CollectionDataLayer(BaseDataLayer):
                 AND (cu.FromDate) >= %(datetime)s
                 order by cu.FromDate asc
                 LIMIT 1
-            ) AS InterestRate
+            ) AS InterestRate, 
+            (
+                SELECT FromDate FROM CollectionUpdate cu
+                WHERE cu.CollectionId = c.Id
+                AND cu.Type = 'Update'
+                AND (cu.FromDate) >= %(datetime)s
+                order by cu.FromDate asc
+                LIMIT 1
+            ) AS NextPayDate
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c
         WHERE Active = b'1';
     '''
