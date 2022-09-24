@@ -34,9 +34,9 @@ class CollectionBusinessLayer:
                     "totalSentOut":row["TotalMinted"],  
                     "interestRate": row["InterestRate"],
                     "nextPayDate": str(row["NextPayDate"]),
-                    "transactions": json.loads(row["Transactions"]),
-                    "interestRecorded": 0,
-                    "interestPaid": 0,
+                    "transactions": json.loads(row["Transactions"]) if row["Transactions"] else [],
+                    "interestRecorded": row["TotalInterestRecorded"],
+                    "interestPaid": row["TotalInterestPaid"],
                 }
             )
         
