@@ -7,7 +7,6 @@ class CollectionDataLayer(BaseDataLayer):
     def __init__(self, db_config):
         BaseDataLayer.__init__(self, db_config)
 
-
     get_collections_report_template = f'''
         SELECT Id, Name, Description, Price, Ipfs, TotalSupply, NetworkId, Address, 
             TotalMinted, Transactions, TotalInterestPaid, TotalInterestRecorded,
@@ -45,7 +44,7 @@ class CollectionDataLayer(BaseDataLayer):
                 self._execute_query(
                     cursor=cursor,
                     query_template=self.get_collections_report_template,
-                    datetime = str(datetime)
+                    datetime=str(datetime)
                 )
 
                 return cursor.fetchall()
@@ -68,12 +67,18 @@ class CollectionDataLayer(BaseDataLayer):
 
     get_collection_with_updates_by_id_query_template = f'''
         SELECT c.Id, StartDate, EndDate, Ipfs, TotalSupply, Address, Price, 
-        NetworkId, Name, Description, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id 
+        NetworkId, Name, Description, Principal, Interest, FromDate, Type, Message, BuyBack, cu.Id, c.MasterWallet
         FROM {BaseDataLayer.COLLECTION_TABLE_NAME} c 
         INNER JOIN {BaseDataLayer.COLLECTION_UPDATE_TABLE_NAME} cu
-        ON  c.Id = cu.CollectionId 
+        ON  c.Id = cu.CollectionId
         WHERE c.Id = %(collection_id)s
         AND c.Active = b'1';
+    '''
+
+    get_contract_of_collections_with_updates_by_id_query_template = f'''
+        SELECT Id,Date,Contract,Profit, Value, Period, Status, TxId, TxLink
+        FROM {BaseDataLayer.CONTRACT_TABLE_NAME}
+        WHERE CollectionId = %(collection_id)s
     '''
 
     def get_collection_with_updates_by_id(self, collection_id):
@@ -84,8 +89,17 @@ class CollectionDataLayer(BaseDataLayer):
                     query_template=self.get_collection_with_updates_by_id_query_template,
                     collection_id=collection_id
                 )
+                collection_info = cursor.fetchall()
 
-                return cursor.fetchall()
+        with self.create_db_connection(self.db_config) as db_connection:
+            with db_connection.cursor() as cursor:
+                self._execute_query(
+                    cursor=cursor,
+                    query_template=self.get_contract_of_collections_with_updates_by_id_query_template,
+                    collection_id=collection_id
+                )
+                contracts = cursor.fetchall()
+        return {"collection_info": collection_info, "contracts": contracts}
 
     get_nft_detail_current_query_template = f'''
 
@@ -123,7 +137,7 @@ class CollectionDataLayer(BaseDataLayer):
                 )
 
                 return cursor.fetchone()
-                
+
     get_nft_detail_history_query_template = f'''
 
         SELECT 	

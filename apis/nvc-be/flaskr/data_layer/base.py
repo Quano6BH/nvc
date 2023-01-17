@@ -1,5 +1,5 @@
 from MySQLdb import connect
-from MySQLdb.connections import  Connection
+from MySQLdb.connections import Connection
 from MySQLdb.cursors import Cursor, DictCursor
 from string import Template
 
@@ -12,11 +12,12 @@ class BaseDataLayer:
     NFT_HOLDER_TABLE_NAME = "NftHolder"
     NFT_HOLDER_BY_DATE_TABLE_NAME = "HolderByDate"
     NFT_HOLDER_BY_MONTH_TABLE_NAME = "HolderByMonth"
+    CONTRACT_TABLE_NAME = "Contract"
 
     def __init__(self, db_config):
         self.db_config = db_config
 
-    def create_db_connection(self, db_config)-> Connection:
+    def create_db_connection(self, db_config) -> Connection:
         return connect(
             host=db_config["host"],
             port=db_config["port"],
@@ -25,15 +26,15 @@ class BaseDataLayer:
             database=db_config["database"],
         )
 
-    def create_cursor(self, db_conn:Connection)-> Cursor:
+    def create_cursor(self, db_conn: Connection) -> Cursor:
         return db_conn.cursor(DictCursor)
 
     def _on_query_string_generated(self, query):
         print(query)
 
-    def _execute_query(self, cursor:Cursor, query_template, **kwargs):
+    def _execute_query(self, cursor: Cursor, query_template, **kwargs):
         query = (Template(query_template).substitute(kwargs))
 
         self._on_query_string_generated(query)
         cursor.execute(query, kwargs)
-        print("Parsed: "+ str(cursor._executed))
+        print("Parsed: " + str(cursor._executed))

@@ -16,8 +16,8 @@ class CollectionBusinessLayer:
         if not result:
             return None
 
-        rows=[]
-        
+        rows = []
+
         for row in result:
             rows.append(
                 {
@@ -26,12 +26,12 @@ class CollectionBusinessLayer:
                     "description": row["Description"],
                     "ipfs": row["Ipfs"],
                     "price": row["Price"],
-                    "address":row["Address"],
-                    "totalSupply":row["TotalSupply"], 
-                    "networkId":row["NetworkId"],
+                    "address": row["Address"],
+                    "totalSupply": row["TotalSupply"],
+                    "networkId": row["NetworkId"],
                     "maturity": row["Maturity"],
-                    "totalMinted":row["TotalMinted"],
-                    "totalSentOut":row["TotalMinted"],  
+                    "totalMinted": row["TotalMinted"],
+                    "totalSentOut": row["TotalMinted"],
                     "interestRate": row["InterestRate"],
                     "nextPayDate": str(row["NextPayDate"]),
                     "transactions": json.loads(row["Transactions"]) if row["Transactions"] else [],
@@ -39,7 +39,7 @@ class CollectionBusinessLayer:
                     "interestPaid": row["TotalInterestPaid"],
                 }
             )
-        
+
         return rows
 
     def get_collections(self):
@@ -48,10 +48,10 @@ class CollectionBusinessLayer:
         if not result:
             return None
 
-        rows=[]
-        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth) 
+        rows = []
+        #MIN(hbm.CollectionId), MIN(hbd.TokenId), SnapshotDate, MIN(cu.Interest), MIN(cu.Principal),  MIN(hbm.UpdateAppliedId) , SUM(hbd.InterestEarnedInMonth), SUM(hbd.HoldDaysInMonth)
         for row in result:
-            id, name, description, price, ipfs  = row
+            id, name, description, price, ipfs = row
             rows.append(
                 {
                     "id": id,
@@ -74,13 +74,13 @@ class CollectionBusinessLayer:
             return None
 
         return {
-                    "datetime": str(data["SnapshotDate"]),
-                    "interestRate": data["Interest"],
-                    "principal": data["Principal"],
-                    "interestEarned": data["InterestEarnedInMonth"],
-                    "holdDays": data["HoldDaysInMonth"],
-                    "updateAppliedId": data["UpdateAppliedId"],
-                }
+            "datetime": str(data["SnapshotDate"]),
+            "interestRate": data["Interest"],
+            "principal": data["Principal"],
+            "interestEarned": data["InterestEarnedInMonth"],
+            "holdDays": data["HoldDaysInMonth"],
+            "updateAppliedId": data["UpdateAppliedId"],
+        }
 
     def get_nft_detail_history(
         self, collection_id, token_id, snapshot_date
@@ -115,7 +115,7 @@ class CollectionBusinessLayer:
 
     def get_collection_with_updates_by_id(self, collection_id):
         data = self.data_layer.get_collection_with_updates_by_id(collection_id)
-        if not data:
+        if not data['collection_info']:
             return None
         (
             id,
@@ -135,8 +135,10 @@ class CollectionBusinessLayer:
             _,
             buy_back_o,
             _,
-        ) = data[0]
-
+            master_wallet,
+        ) = data['collection_info'][0]
+        contracts = data['contracts']
+        print(12, contracts)
         return {
             "id": id,
             "startDate": str(start_date),
@@ -158,8 +160,23 @@ class CollectionBusinessLayer:
                     "buyBack": str(buy_back)[-2] == "1",
                     "id": cu_id,
                 }
-                for _, _, _, _, _, _, _, _, _, _, principal, interest, from_date, type, message, buy_back, cu_id in data
+                for _, _, _, _, _, _, _, _, _, _, principal, interest, from_date, type, message, buy_back, cu_id, master_wallet in data["collection_info"]
             ],
+            "master_wallet": master_wallet,
+            "contracts": [{
+                "id": contract_id,
+                "date": str(date),
+                "contract": contract,
+                "profit": profit,
+                "value": value,
+                "period": period,
+                "status": status,
+                "tx_id": tx_id,
+                "tx_link": tx_link,
+            }
+                for contract_id, date, contract, profit, value, period, status, tx_id, tx_link in contracts
+            ]
+
         }
 
     def get_nft_current(
